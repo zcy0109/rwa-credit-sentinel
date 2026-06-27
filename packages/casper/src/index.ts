@@ -162,7 +162,9 @@ export async function runCasperRealModePreflight(
   }
 
   if (!hasSigningKey(config)) {
-    throw new Error("CASPER_PRIVATE_KEY_HEX or CASPER_PRIVATE_KEY_PEM is required for real mode.");
+    throw new Error(
+      "CASPER_PRIVATE_KEY_HEX, CASPER_PRIVATE_KEY_PEM, or CASPER_PRIVATE_KEY_PEM_FILE is required for real mode."
+    );
   }
 
   const privateKey = readPrivateKey(config);

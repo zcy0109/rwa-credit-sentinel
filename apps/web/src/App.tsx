@@ -12,6 +12,14 @@ import {
 import type { AssetType, CasperAttestation, FinancingRequest, RiskReport } from "@rwa-sentinel/shared";
 import "./styles.css";
 
+const verifiedCasperProof = {
+  transactionHash: "34e2e8d36239d4f96dc2d5e38337a1834c6289ebbfc4ca24e99619ccfc6d1b65",
+  explorerUrl:
+    "https://testnet.cspr.live/transaction/34e2e8d36239d4f96dc2d5e38337a1834c6289ebbfc4ca24e99619ccfc6d1b65",
+  blockHeight: "8315213",
+  transferId: "175750564669954"
+};
+
 type ReportResponse = {
   report: RiskReport;
   attestation: CasperAttestation;
@@ -130,8 +138,27 @@ export default function App() {
         </div>
         <div className="hero-status">
           <ShieldCheck size={22} />
-          <span>Agentic RWA risk credentialing</span>
+          <span>Casper Testnet verified</span>
         </div>
+      </section>
+
+      <section className="proof-strip">
+        <div>
+          <p className="eyebrow">Verified Casper Evidence</p>
+          <h2>Real Testnet attestation anchored for the demo credential</h2>
+        </div>
+        <dl>
+          <dt>Transaction</dt>
+          <dd>
+            <a href={verifiedCasperProof.explorerUrl} target="_blank" rel="noreferrer">
+              {verifiedCasperProof.transactionHash}
+            </a>
+          </dd>
+          <dt>Block</dt>
+          <dd>{verifiedCasperProof.blockHeight}</dd>
+          <dt>Transfer ID</dt>
+          <dd>{verifiedCasperProof.transferId}</dd>
+        </dl>
       </section>
 
       {error ? <p className="error">{error}</p> : null}

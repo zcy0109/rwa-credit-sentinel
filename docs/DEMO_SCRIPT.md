@@ -6,6 +6,13 @@ Target length: 3-5 minutes.
 
 RWA lending protocols need risk signals from off-chain assets, but PDF reports and private databases are hard to verify. RWA Credit Sentinel turns an agentic risk analysis into a Casper-anchored credential.
 
+Show the top proof strip first:
+
+- Real Casper Testnet transaction
+- Block height
+- Transfer ID
+- Explorer link
+
 ## 0:30 - Intake
 
 Show the financing request form. The sample request is an invoice-backed asset with requested amount, maturity, debtor profile, asset description, and evidence URLs.
@@ -36,6 +43,12 @@ Show the Casper credential panel:
 
 Explain that real mode uses `casper-js-sdk` to send a Casper Testnet native transfer transaction, with the transfer ID derived from the report hash as an on-chain memo. This anchors the off-chain risk credential to Casper.
 
+Use this transaction as the proof:
+
+```text
+https://testnet.cspr.live/transaction/34e2e8d36239d4f96dc2d5e38337a1834c6289ebbfc4ca24e99619ccfc6d1b65
+```
+
 ## 3:25 - Registry
 
 Show the recent credential registry. Explain that a DeFi protocol or underwriter can query the latest risk credential by asset ID through the API, then compare the report hash and evidence hash with the Casper transaction anchor.
@@ -49,7 +62,7 @@ Show README or repo structure:
 - `packages/shared`
 - `packages/casper`
 
-Mention that the qualification prototype is local-demo ready, with real Casper Testnet mode enabled when a funded key is provided.
+Mention that the qualification prototype is local-demo ready, verified with `npm run verify`, and already includes a real Casper Testnet attestation.
 
 ## 4:35 - Roadmap
 

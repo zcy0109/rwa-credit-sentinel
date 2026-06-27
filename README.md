@@ -4,6 +4,30 @@ Agentic RWA credit-risk assessment with Casper Testnet attestation and a DeFi fi
 
 Built for **Casper Agentic Buildathon 2026**.
 
+## Submission Snapshot
+
+- GitHub: https://github.com/zcy0109/rwa-credit-sentinel
+- Casper Testnet transaction: https://testnet.cspr.live/transaction/34e2e8d36239d4f96dc2d5e38337a1834c6289ebbfc4ca24e99619ccfc6d1b65
+- Transaction hash: `34e2e8d36239d4f96dc2d5e38337a1834c6289ebbfc4ca24e99619ccfc6d1b65`
+- Block height: `8315213`
+- Verification command: `npm run verify`
+
+## Judge Quickstart
+
+```bash
+npm install
+npm run verify
+npm run dev
+```
+
+Open:
+
+```text
+http://127.0.0.1:5173
+```
+
+The app runs in mock mode by default for safe local review. Real Casper Testnet evidence is already recorded above and in [docs/CASPER.md](docs/CASPER.md).
+
 ## Thesis
 
 RWA lending needs trustworthy off-chain risk signals. RWA Credit Sentinel turns an agentic risk assessment into a verifiable Casper credential: the AI agents evaluate an invoice or asset-backed financing request, generate a structured risk report, hash the evidence, and anchor the risk credential to Casper so a DeFi lending gate can make an auditable eligibility decision.
@@ -77,13 +101,15 @@ See [docs/VERIFICATION.md](docs/VERIFICATION.md).
 
 ## Casper Testnet Mode
 
-The app runs in mock mode by default. To send a real Casper Testnet transaction, copy `.env.example` to `.env` and provide a funded testnet private key.
+The app runs in mock mode by default. To send a real Casper Testnet transaction, copy `.env.example` to `.env` and reference a funded testnet signing key. The safest local option is a wallet-exported PEM file kept under ignored `.secrets/`.
 
 ```bash
 CASPER_MODE=real
-CASPER_PRIVATE_KEY_HEX=...
-CASPER_KEY_ALGORITHM=ED25519
+CASPER_PRIVATE_KEY_PEM_FILE=.secrets/Account_1_secret_key.pem
+CASPER_KEY_ALGORITHM=SECP256K1
 ```
+
+Use `CASPER_KEY_ALGORITHM=SECP256K1` for public keys starting with `02`, and `ED25519` for public keys starting with `01`.
 
 See [docs/CASPER.md](docs/CASPER.md).
 
@@ -104,7 +130,7 @@ Every API report response also includes a `registryCall` preview with the `recor
 
 ## Current Status
 
-The local prototype is functional. Real Casper Testnet mode is implemented, but submitting a real transaction requires a funded Casper Testnet key. The Casper Risk Registry contract is scaffolded as a source blueprint and still needs Rust/Odra compilation and deployment.
+The local prototype is functional and verified. A real Casper Testnet native-transfer attestation has been submitted for the demo credential. The Casper Risk Registry contract is scaffolded as a source blueprint and still needs Rust/Odra compilation and deployment for the final contract-registry path.
 
 ## Safety
 

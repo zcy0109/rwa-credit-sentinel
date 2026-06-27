@@ -103,17 +103,18 @@ This checks:
 - RPC node is reachable.
 - Account balance is high enough for the configured transfer amount plus payment.
 
-Real testnet mode on macOS/Linux:
+Real testnet mode with a PEM file on macOS/Linux:
 
 ```bash
-CASPER_MODE=real CASPER_PRIVATE_KEY_HEX=... npm --workspace packages/casper run smoke:real
+CASPER_MODE=real CASPER_PRIVATE_KEY_PEM_FILE=.secrets/Account_1_secret_key.pem CASPER_KEY_ALGORITHM=SECP256K1 npm --workspace packages/casper run smoke:real
 ```
 
-Real testnet mode on Windows PowerShell:
+Real testnet mode with a PEM file on Windows PowerShell:
 
 ```powershell
 $env:CASPER_MODE="real"
-$env:CASPER_PRIVATE_KEY_HEX="..."
+$env:CASPER_PRIVATE_KEY_PEM_FILE=".secrets/Account_1_secret_key.pem"
+$env:CASPER_KEY_ALGORITHM="SECP256K1"
 npm --workspace packages/casper run smoke:real
 ```
 

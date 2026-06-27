@@ -49,6 +49,9 @@
 - [x] Write demo video script.
 - [x] Capture screenshots.
 - [x] Prepare public repository checklist.
+- [x] Publish GitHub repository.
+- [ ] Record and upload demo video.
+- [ ] Fill DoraHacks final submission form.
 
 ## Phase 6 - Casper Contract Registry
 

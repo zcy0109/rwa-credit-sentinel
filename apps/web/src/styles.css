@@ -132,6 +132,41 @@ h2 {
   padding: 12px 14px;
 }
 
+.proof-strip {
+  align-items: start;
+  background: #17201b;
+  border-radius: 8px;
+  color: #f4fbf3;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  margin-bottom: 24px;
+  padding: 20px;
+}
+
+.proof-strip .eyebrow {
+  color: #b8d7bf;
+}
+
+.proof-strip h2 {
+  font-size: 22px;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.proof-strip dl {
+  gap: 8px 14px;
+  grid-template-columns: 100px minmax(0, 1fr);
+}
+
+.proof-strip dt {
+  color: #a9c8ae;
+}
+
+.proof-strip a {
+  color: #9ee3ad;
+}
+
 .workspace {
   align-items: start;
   display: grid;
@@ -393,6 +428,7 @@ dd {
 
 @media (max-width: 850px) {
   .hero,
+  .proof-strip,
   .workspace,
   .registry-row,
   .results {

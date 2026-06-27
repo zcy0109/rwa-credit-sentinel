@@ -5,6 +5,7 @@
 - [x] Working prototype exists and can be run locally.
 - [x] Casper Testnet integration produces a real transaction or contract call.
 - [x] GitHub-ready source is open-source friendly.
+- [x] GitHub repository is published.
 - [x] README includes setup, architecture, and usage instructions.
 - [x] Demo video script explains the full walkthrough.
 
@@ -32,3 +33,8 @@
 - [x] RWA/DeFi use case is credible and concrete.
 - [x] Roadmap explains how this could become a real Casper ecosystem tool.
 - [x] Credential registry makes the DeFi integration story queryable.
+
+## Submission Remaining
+
+- [ ] Demo video is recorded and uploaded.
+- [ ] DoraHacks submission form is filled.

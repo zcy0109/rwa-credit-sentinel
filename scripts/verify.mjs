@@ -77,8 +77,13 @@ function checkFrontendBundle() {
   const bundleText = jsFiles.map((file) => readFileSync(join(assetsDir, file), "utf8")).join("\n");
   assert(bundleText.includes("Casper Registry Path"), "frontend bundle is missing Casper Registry Path");
   assert(bundleText.includes("record_credential"), "frontend bundle is missing record_credential");
+  assert(bundleText.includes("Verified Casper Evidence"), "frontend bundle is missing Casper proof strip");
+  assert(
+    bundleText.includes("34e2e8d36239d4f96dc2d5e38337a1834c6289ebbfc4ca24e99619ccfc6d1b65"),
+    "frontend bundle is missing the real Casper Testnet transaction hash"
+  );
 
-  return "Frontend bundle includes the Casper registry path panel.";
+  return "Frontend bundle includes the Casper registry path panel and real proof strip.";
 }
 
 async function exerciseApi() {

@@ -191,3 +191,16 @@
   - `https://github.com/zcy0109/rwa-credit-sentinel`
 - Pushed `main` to GitHub.
 - Confirmed repository page returns HTTP 200.
+
+## 2026-06-27 14:55 CST
+
+- Added a first-screen Casper proof strip to the frontend with:
+  - real Testnet transaction hash
+  - block height
+  - transfer ID
+  - explorer link
+- Updated README with a judge quickstart and submission snapshot.
+- Updated DoraHacks submission notes, demo script, acceptance checklist, and TODOs to reflect the published repository and real Casper evidence.
+- Improved real-mode documentation to prefer ignored wallet PEM files instead of pasting private keys.
+- Extended `npm run verify` to require the frontend's real Casper proof strip and transaction hash in the production bundle.
+- Re-ran `npm run verify`: passes with the existing warning that Cargo/Rust are not installed.

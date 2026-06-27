@@ -12,6 +12,12 @@ https://github.com/zcy0109/rwa-credit-sentinel
 
 Agentic RWA credit-risk assessment that anchors verifiable risk credentials to Casper for DeFi financing gates.
 
+## Suggested DoraHacks Summary
+
+RWA Credit Sentinel is an agentic AI underwriting prototype for real-world asset lending. Specialized agents analyze an invoice-backed financing request, generate a risk credential, hash the report and evidence, anchor the credential to Casper Testnet, and expose the result to a DeFi lending gate and credential registry.
+
+The demo includes a working web app, API, deterministic multi-agent risk workflow, local credential registry, real Casper Testnet transaction evidence, and an Odra/Rust Risk Registry contract blueprint for the final on-chain registry path.
+
 ## Short Description
 
 RWA Credit Sentinel helps DeFi lending systems evaluate real-world asset financing requests. A user submits an invoice or asset-backed financing request, specialized AI agents generate a structured risk report, and the system anchors the report hash and evidence hash to Casper. A DeFi gate then reads the risk credential and classifies the financing request as eligible, review, or rejected.
@@ -29,6 +35,7 @@ The prototype also exposes a local credential registry API so financing protocol
 ## Technical Highlights
 
 - TypeScript monorepo with API, frontend, shared domain package, and Casper package.
+- Working web demo at `http://127.0.0.1:5173` after `npm run dev`.
 - Deterministic report and evidence hashing.
 - Agent trace displayed in the UI for judge review.
 - Casper adapter supports mock and real modes.
@@ -39,6 +46,7 @@ The prototype also exposes a local credential registry API so financing protocol
 - TypeScript contract argument mapping is included in `packages/casper`, and every report response includes a `registryCall` preview for the future contract call.
 - Local credential registry exposes `GET /api/credentials` and `GET /api/credentials/:assetId`.
 - Build, tests, and Casper mock smoke test pass locally.
+- Full verification is available with `npm run verify`.
 - `npm run casper:preflight` checks real-mode signing key, RPC reachability, and funded balance before submitting a real transaction.
 
 ## Demo Flow
@@ -50,7 +58,14 @@ The prototype also exposes a local credential registry API so financing protocol
 5. Inspect the four-agent trace.
 6. Inspect factor scores.
 7. Inspect Casper credential: network, method, transfer ID, transaction hash, report hash, and evidence hash.
-8. Inspect the recent credential registry and show the generated asset ID is queryable.
+8. Show the top proof strip with the real Casper Testnet transaction.
+9. Inspect the recent credential registry and show the generated asset ID is queryable.
+
+## Submission Links
+
+- GitHub: `https://github.com/zcy0109/rwa-credit-sentinel`
+- Casper Testnet transaction: `https://testnet.cspr.live/transaction/34e2e8d36239d4f96dc2d5e38337a1834c6289ebbfc4ca24e99619ccfc6d1b65`
+- Demo video: pending upload
 
 ## Current Limitations
 
