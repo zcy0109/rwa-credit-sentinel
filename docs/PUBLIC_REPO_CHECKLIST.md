@@ -11,7 +11,7 @@ Before publishing the repository:
 - [x] If a funded Casper Testnet key is available, run `npm run casper:preflight`.
 - [x] If a funded Casper Testnet key is available, run a real-mode smoke test and record the transaction hash.
 - [x] Update `docs/CASPER.md` with the real transaction hash.
-- [ ] Update the DoraHacks submission with the GitHub URL.
+- [x] Update the DoraHacks submission with the GitHub URL.
 - [ ] Upload or link the demo video.
 - [ ] Include screenshots from `outputs/`.
 - [ ] Keep limitations visible: no custody, no investment advice, no real KYC processing.

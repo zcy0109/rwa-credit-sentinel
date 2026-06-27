@@ -181,3 +181,13 @@
 - Fixed transaction hash extraction from `casper-js-sdk` RPC response.
 - Forced `smoke:mock` to override `.env` real mode so `npm run verify` cannot accidentally spend Testnet CSPR.
 - Re-ran `npm run verify`: passes with the existing warning that Cargo/Rust are not installed.
+
+## 2026-06-27 14:33 CST
+
+- Initialized Git repository and created initial commit:
+  - `c59b921 Initial RWA Credit Sentinel buildathon prototype`
+- Confirmed `.env` and `.secrets/` are ignored and not staged.
+- Created GitHub repository:
+  - `https://github.com/zcy0109/rwa-credit-sentinel`
+- Pushed `main` to GitHub.
+- Confirmed repository page returns HTTP 200.

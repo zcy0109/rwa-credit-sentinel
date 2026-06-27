@@ -4,6 +4,10 @@
 
 RWA Credit Sentinel
 
+## Repository
+
+https://github.com/zcy0109/rwa-credit-sentinel
+
 ## One-Liner
 
 Agentic RWA credit-risk assessment that anchors verifiable risk credentials to Casper for DeFi financing gates.
