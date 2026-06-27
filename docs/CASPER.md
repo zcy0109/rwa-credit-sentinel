@@ -15,7 +15,7 @@ The final-round path is now scaffolded in `contracts/risk-registry`: an Odra/Rus
 
 ## Testnet Evidence
 
-Real Casper Testnet native-transfer attestation was produced for the demo credential:
+Real Casper Testnet native-transfer attestation was produced from the verified buildathon smoke run:
 
 ```text
 Transaction hash:

@@ -13,6 +13,8 @@ Show the top proof strip first:
 - Transfer ID
 - Explorer link
 
+Clarify that this is the published Testnet proof from the verified buildathon run. The interactive assessment below runs in local mock mode by default so judges can repeat it without spending Testnet CSPR.
+
 ## 0:30 - Intake
 
 Show the financing request form. The sample request is an invoice-backed asset with requested amount, maturity, debtor profile, asset description, and evidence URLs.
@@ -41,7 +43,7 @@ Show the Casper credential panel:
 - Report hash
 - Evidence hash
 
-Explain that real mode uses `casper-js-sdk` to send a Casper Testnet native transfer transaction, with the transfer ID derived from the report hash as an on-chain memo. This anchors the off-chain risk credential to Casper.
+Explain that the panel is a live credential preview when the app runs in local mock mode. Real mode uses `casper-js-sdk` to send a Casper Testnet native transfer transaction, with the transfer ID derived from the report hash as an on-chain memo. This anchors the off-chain risk credential to Casper.
 
 Use this transaction as the proof:
 

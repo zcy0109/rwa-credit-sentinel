@@ -16,7 +16,7 @@ Agentic RWA credit-risk assessment that anchors verifiable risk credentials to C
 
 RWA Credit Sentinel is an agentic AI underwriting prototype for real-world asset lending. Specialized agents analyze an invoice-backed financing request, generate a risk credential, hash the report and evidence, anchor the credential to Casper Testnet, and expose the result to a DeFi lending gate and credential registry.
 
-The demo includes a working web app, API, deterministic multi-agent risk workflow, local credential registry, real Casper Testnet transaction evidence, and an Odra/Rust Risk Registry contract blueprint for the final on-chain registry path.
+The demo includes a working web app, API, deterministic multi-agent risk workflow, local credential registry, real Casper Testnet transaction evidence from the verified smoke run, and an Odra/Rust Risk Registry contract blueprint for the final on-chain registry path.
 
 ## Short Description
 
@@ -59,7 +59,8 @@ The prototype also exposes a local credential registry API so financing protocol
 6. Inspect factor scores.
 7. Inspect Casper credential: network, method, transfer ID, transaction hash, report hash, and evidence hash.
 8. Show the top proof strip with the real Casper Testnet transaction.
-9. Inspect the recent credential registry and show the generated asset ID is queryable.
+9. Point out that the live credential card is a local mock preview unless the API is started with `CASPER_MODE=real`.
+10. Inspect the recent credential registry and show the generated asset ID is queryable.
 
 ## Submission Links
 

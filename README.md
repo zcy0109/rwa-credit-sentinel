@@ -130,7 +130,7 @@ Every API report response also includes a `registryCall` preview with the `recor
 
 ## Current Status
 
-The local prototype is functional and verified. A real Casper Testnet native-transfer attestation has been submitted for the demo credential. The Casper Risk Registry contract is scaffolded as a source blueprint and still needs Rust/Odra compilation and deployment for the final contract-registry path.
+The local prototype is functional and verified. A real Casper Testnet native-transfer attestation has been submitted from the buildathon smoke run, while the default local web flow remains in safe mock mode for repeatable judging. The Casper Risk Registry contract is scaffolded as a source blueprint and still needs Rust/Odra compilation and deployment for the final contract-registry path.
 
 ## Safety
 

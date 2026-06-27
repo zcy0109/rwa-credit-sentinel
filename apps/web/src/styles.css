@@ -239,6 +239,46 @@ h2 {
   margin-bottom: 0;
 }
 
+.compact-heading {
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.mode-badge {
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 10px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.mode-badge.mock {
+  background: #fff1c2;
+  color: #715000;
+}
+
+.mode-badge.real {
+  background: #dcf8db;
+  color: #19621d;
+}
+
+.mode-note {
+  background: #f7faf5;
+  border: 1px solid #e0e8dc;
+  border-radius: 8px;
+  color: #59635a;
+  line-height: 1.5;
+  margin: 16px 0 0;
+  padding: 12px;
+}
+
+.mode-note.success {
+  background: #edf8ef;
+  border-color: #c8e7cf;
+  color: #205a35;
+}
+
 .form-grid {
   display: grid;
   gap: 12px;
