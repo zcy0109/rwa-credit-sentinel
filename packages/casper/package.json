@@ -9,6 +9,7 @@
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
     "preflight:real": "tsx scripts/preflight.ts",
+    "deploy:registry": "tsx scripts/deployRegistry.ts",
     "smoke:mock": "tsx scripts/smoke.ts --mode=mock",
     "smoke:real": "tsx scripts/smoke.ts --mode=real"
   },

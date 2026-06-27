@@ -1,8 +1,10 @@
 # Casper Risk Registry Contract
 
-This folder contains the planned Casper smart-contract layer for RWA Credit Sentinel.
+This folder contains the Casper smart-contract layer for RWA Credit Sentinel.
 
-The current buildathon prototype can already create a Casper Testnet native transfer attestation through `packages/casper`. This contract is the next step: a dedicated on-chain registry that stores the latest risk credential per RWA asset ID and emits an event for DeFi protocols and underwriters.
+The contract is a dedicated on-chain registry that stores the latest risk credential per RWA asset
+ID. It gives the buildathon prototype a real Casper Testnet contract hash, not only a native
+transfer proof.
 
 ## Contract Shape
 
@@ -29,14 +31,37 @@ The native-transfer path proves a transaction-producing Casper integration. The 
 
 - DeFi lending pools can query Casper for the latest credential.
 - The report hash and evidence hash become contract state, not only transaction metadata.
-- Events create an indexable audit trail for risk updates.
 - The owner check models a real issuer/underwriter authority.
 
 ## Current Status
 
-This is a source blueprint. Rust/Cargo are not installed in the current Windows workspace, so it has not been compiled or deployed here yet.
+The contract source compiles locally to Casper Wasm with Rust nightly, the `wasm32-unknown-unknown`
+target, and the native `casper-contract` APIs. The optimized Casper-compatible deployable artifact is:
 
-Before final submission or finals, compile with the Casper/Odra toolchain, deploy to Casper Testnet, and replace the native-transfer adapter with a contract-call adapter.
+`wasm/RiskRegistry.wasm`
+
+The raw contract Wasm is compiled first, then lowered to MVP Wasm with Binaryen so Casper Testnet
+accepts it without bulk-memory opcodes:
+
+```bash
+cargo +nightly build -Z build-std=core,alloc --target wasm32-unknown-unknown --release
+npm exec --yes --package=binaryen@130.0.0 -- wasm-opt \
+  target/wasm32-unknown-unknown/release/rwa_risk_registry.wasm \
+  --mvp-features \
+  --llvm-memory-copy-fill-lowering \
+  -Oz \
+  -o wasm/RiskRegistry.wasm
+```
+
+Deploy it to Casper Testnet with:
+
+```bash
+npm run casper:deploy:registry
+```
+
+The buildathon prototype still keeps the native-transfer attestation path as a fallback proof. The
+next integration step is to call this registry contract's `record_credential` entry point from the
+API and show the contract hash in the frontend.
 
 ## Planned Integration Steps
 

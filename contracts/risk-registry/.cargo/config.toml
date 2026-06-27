@@ -1,0 +1,9 @@
+[target.wasm32-unknown-unknown]
+rustflags = [
+  "-C",
+  "link-arg=--allow-undefined",
+  "-C",
+  "target-cpu=mvp",
+  "-C",
+  "target-feature=-bulk-memory"
+]
