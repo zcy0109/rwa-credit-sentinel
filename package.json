@@ -1,0 +1,34 @@
+{
+  "name": "rwa-credit-sentinel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npm-run-all --parallel dev:api dev:web",
+    "dev:api": "npm --workspace apps/api run dev",
+    "dev:web": "npm --workspace apps/web run dev",
+    "build": "npm-run-all --serial build:shared build:casper build:api build:web",
+    "build:shared": "npm --workspace packages/shared run build",
+    "build:casper": "npm --workspace packages/casper run build",
+    "build:api": "npm --workspace apps/api run build",
+    "build:web": "npm --workspace apps/web run build",
+    "test": "npm-run-all --serial test:shared test:casper test:api",
+    "test:shared": "npm --workspace packages/shared run test",
+    "test:casper": "npm --workspace packages/casper run test",
+    "test:api": "npm --workspace apps/api run test",
+    "verify": "node scripts/verify.mjs",
+    "casper:preflight": "npm --workspace packages/casper run preflight:real",
+    "casper:smoke:real": "npm --workspace packages/casper run smoke:real",
+    "lint": "npm-run-all --parallel lint:*",
+    "lint:api": "npm --workspace apps/api run lint",
+    "lint:web": "npm --workspace apps/web run lint"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.5.4"
+  }
+}

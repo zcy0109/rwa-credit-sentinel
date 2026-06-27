@@ -1,0 +1,25 @@
+{
+  "name": "@rwa-sentinel/casper",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "preflight:real": "tsx scripts/preflight.ts",
+    "smoke:mock": "tsx scripts/smoke.ts --mode=mock",
+    "smoke:real": "tsx scripts/smoke.ts --mode=real"
+  },
+  "dependencies": {
+    "@rwa-sentinel/shared": "0.1.0",
+    "casper-js-sdk": "^5.0.12",
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "tsx": "^4.19.0",
+    "vitest": "^2.1.9"
+  }
+}

@@ -1,0 +1,9 @@
+node_modules
+dist
+.env
+.env.local
+.secrets
+.vite
+coverage
+*.log
+*.tsbuildinfo
