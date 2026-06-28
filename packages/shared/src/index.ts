@@ -47,7 +47,9 @@ export type CasperAttestation = {
   evidenceHash: string;
   issuer: string;
   network: "casper-testnet" | "mock";
-  method: "native-transfer-memo" | "mock";
+  method: "contract-registry" | "native-transfer-memo" | "mock";
+  contractHash?: string;
+  entryPoint?: string;
   transferId?: number;
   transactionHash: string;
   explorerUrl?: string;

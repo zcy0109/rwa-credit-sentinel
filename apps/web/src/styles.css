@@ -156,7 +156,7 @@ h2 {
 
 .proof-strip dl {
   gap: 8px 14px;
-  grid-template-columns: 100px minmax(0, 1fr);
+  grid-template-columns: 118px minmax(0, 1fr);
 }
 
 .proof-strip dt {
@@ -165,6 +165,7 @@ h2 {
 
 .proof-strip a {
   color: #9ee3ad;
+  overflow-wrap: anywhere;
 }
 
 .workspace {

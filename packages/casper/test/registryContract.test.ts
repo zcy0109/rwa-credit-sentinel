@@ -3,12 +3,14 @@ import { buildRiskRegistryCallPreview, toRiskRegistryRecordArgs } from "../src/r
 
 describe("risk registry contract argument mapping", () => {
   it("maps a risk credential into Casper registry arguments", () => {
+    const createdAtMs = 1_798_900_000_000;
     const args = toRiskRegistryRecordArgs({
       assetId: "invoice:acme-batch",
       riskScore: 72,
       decision: "review",
       reportHash: "report-hash",
-      evidenceHash: "evidence-hash"
+      evidenceHash: "evidence-hash",
+      createdAtMs
     });
 
     expect(args).toMatchObject({
@@ -16,9 +18,9 @@ describe("risk registry contract argument mapping", () => {
       risk_score: 72,
       decision: "Review",
       report_hash: "report-hash",
-      evidence_hash: "evidence-hash"
+      evidence_hash: "evidence-hash",
+      created_at_ms: createdAtMs
     });
-    expect(args.created_at_ms).toBeGreaterThan(0);
   });
 
   it("builds a contract-call preview for the registry entry point", () => {

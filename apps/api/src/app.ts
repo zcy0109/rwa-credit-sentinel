@@ -46,23 +46,16 @@ export function createApp() {
     try {
       const request = financingRequestSchema.parse(req.body);
       const report = await buildRiskReport(request);
-      const attestation = await casper.attestRiskCredential({
+      const attestationInput = {
         assetId: report.assetId,
         riskScore: report.riskScore,
         decision: report.decision,
         reportHash: report.reportHash,
-        evidenceHash: report.evidenceHash
-      });
-      const registryCall = buildRiskRegistryCallPreview(
-        {
-          assetId: report.assetId,
-          riskScore: report.riskScore,
-          decision: report.decision,
-          reportHash: report.reportHash,
-          evidenceHash: report.evidenceHash
-        },
-        process.env.CASPER_RISK_REGISTRY_HASH
-      );
+        evidenceHash: report.evidenceHash,
+        createdAtMs: Date.now()
+      };
+      const attestation = await casper.attestRiskCredential(attestationInput);
+      const registryCall = buildRiskRegistryCallPreview(attestationInput, process.env.CASPER_RISK_REGISTRY_HASH);
       const credential = credentialRegistry.save({ report, attestation, registryCall });
 
       res.json(credential);

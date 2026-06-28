@@ -43,7 +43,7 @@ export function toRiskRegistryRecordArgs(input: AttestRiskCredentialInput): Risk
     decision: toRegistryDecision(input.decision),
     report_hash: input.reportHash,
     evidence_hash: input.evidenceHash,
-    created_at_ms: Date.now()
+    created_at_ms: input.createdAtMs ?? Date.now()
   };
 }
 

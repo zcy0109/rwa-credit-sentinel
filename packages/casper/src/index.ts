@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 import casperSdk from "casper-js-sdk";
 import type { CasperAttestation, RiskDecision } from "@rwa-sentinel/shared";
 export {
@@ -9,14 +10,22 @@ export {
   type RiskRegistryCallPreview,
   type RiskRegistryRecordArgs
 } from "./registryContract.js";
+import { RISK_REGISTRY_ENTRY_POINTS, toRiskRegistryRecordArgs } from "./registryContract.js";
 
 const {
+  Args,
+  CLValue,
+  ContractHash,
+  Deploy,
+  DeployHeader,
+  ExecutableDeployItem,
   HttpHandler,
   KeyAlgorithm,
   NativeTransferBuilder,
   PrivateKey,
   PurseIdentifier,
-  RpcClient
+  RpcClient,
+  StoredContractByHash
 } = casperSdk as typeof import("casper-js-sdk");
 
 export type AttestRiskCredentialInput = {
@@ -26,6 +35,7 @@ export type AttestRiskCredentialInput = {
   reportHash: string;
   evidenceHash: string;
   issuer?: string;
+  createdAtMs?: number;
 };
 
 export type CasperAdapter = {
@@ -42,6 +52,8 @@ export type CasperAdapterConfig = {
   privateKeyPemFile?: string;
   paymentMotes: number;
   transferAmountMotes: string;
+  contractCallPaymentMotes: string;
+  riskRegistryHash?: string;
   explorerBaseUrl: string;
 };
 
@@ -63,6 +75,10 @@ const DEFAULT_TESTNET_EXPLORER = "https://testnet.cspr.live/transaction";
 
 export function createCasperAdapterFromEnv(env: NodeJS.ProcessEnv = process.env): CasperAdapter {
   const config = readCasperConfig(env);
+  if (config.mode === "real" && hasSigningKey(config) && config.riskRegistryHash) {
+    return new CasperRegistryAttestationAdapter(config);
+  }
+
   if (config.mode === "real" && hasSigningKey(config)) {
     return new CasperTransferAttestationAdapter(config);
   }
@@ -81,6 +97,8 @@ export function readCasperConfig(env: NodeJS.ProcessEnv): CasperAdapterConfig {
     privateKeyPemFile: env.CASPER_PRIVATE_KEY_PEM_FILE,
     paymentMotes: Number(env.CASPER_PAYMENT_MOTES ?? 100_000_000),
     transferAmountMotes: env.CASPER_TRANSFER_AMOUNT_MOTES ?? "2500000000",
+    contractCallPaymentMotes: env.CASPER_CONTRACT_CALL_PAYMENT_MOTES ?? "20000000000",
+    riskRegistryHash: env.CASPER_RISK_REGISTRY_HASH,
     explorerBaseUrl: env.CASPER_EXPLORER_BASE_URL ?? DEFAULT_TESTNET_EXPLORER
   };
 }
@@ -110,6 +128,68 @@ export class MockCasperAdapter implements CasperAdapter {
       transferId,
       transactionHash: `mock-${transactionHash.slice(0, 48)}`,
       createdAt: new Date().toISOString()
+    };
+  }
+}
+
+export class CasperRegistryAttestationAdapter implements CasperAdapter {
+  constructor(private readonly config: CasperAdapterConfig) {}
+
+  async attestRiskCredential(input: AttestRiskCredentialInput): Promise<CasperAttestation> {
+    if (!this.config.riskRegistryHash) {
+      throw new Error("CASPER_RISK_REGISTRY_HASH is required for contract registry attestation.");
+    }
+
+    const privateKey = readPrivateKey(this.config);
+    const rpcClient = new RpcClient(new HttpHandler(this.config.rpcUrl));
+    const recordArgs = toRiskRegistryRecordArgs(input);
+    const deployHeader = DeployHeader.default();
+    deployHeader.account = privateKey.publicKey;
+    deployHeader.chainName = this.config.chainName;
+
+    const session = new ExecutableDeployItem();
+    session.storedContractByHash = new StoredContractByHash(
+      ContractHash.fromJSON(normalizeHash(this.config.riskRegistryHash)),
+      RISK_REGISTRY_ENTRY_POINTS.recordCredential,
+      Args.fromMap(
+        {
+          asset_id: CLValue.newCLString(recordArgs.asset_id),
+          risk_score: CLValue.newCLUint8(recordArgs.risk_score),
+          decision: CLValue.newCLString(recordArgs.decision),
+          report_hash: CLValue.newCLString(recordArgs.report_hash),
+          evidence_hash: CLValue.newCLString(recordArgs.evidence_hash),
+          created_at_ms: CLValue.newCLUint64(recordArgs.created_at_ms.toString())
+        } as unknown as Record<string, never>
+      )
+    );
+
+    const payment = ExecutableDeployItem.standardPayment(this.config.contractCallPaymentMotes);
+    const deploy = Deploy.makeDeploy(deployHeader, payment, session);
+    deploy.sign(privateKey);
+
+    const result = (await rpcClient.putDeploy(deploy)) as { deployHash?: unknown };
+    const transactionHash = stringifyTransactionHash(result.deployHash ?? deploy.hash);
+    const confirmed = await rpcClient.waitForDeploy(deploy, Number(process.env.CASPER_REGISTRY_WAIT_MS ?? 180_000));
+    const executionResult = extractDeployExecutionResult(confirmed);
+
+    if (executionResult?.errorMessage) {
+      throw new Error(`Casper registry call failed: ${executionResult.errorMessage}`);
+    }
+
+    return {
+      assetId: input.assetId,
+      riskScore: input.riskScore,
+      decision: input.decision,
+      reportHash: input.reportHash,
+      evidenceHash: input.evidenceHash,
+      issuer: input.issuer ?? privateKey.publicKey.toHex(),
+      network: "casper-testnet",
+      method: "contract-registry",
+      contractHash: normalizeHash(this.config.riskRegistryHash),
+      entryPoint: RISK_REGISTRY_ENTRY_POINTS.recordCredential,
+      transactionHash,
+      explorerUrl: `${this.config.explorerBaseUrl}/${transactionHash}`,
+      createdAt: new Date(recordArgs.created_at_ms).toISOString()
     };
   }
 }
@@ -240,6 +320,23 @@ function stringifyTransactionHash(value: unknown): string {
   throw new Error("Unable to read Casper transaction hash from RPC response.");
 }
 
+function extractDeployExecutionResult(value: unknown): { errorMessage?: string | null } | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const candidate = value as {
+    executionInfo?: { executionResult?: { errorMessage?: string | null } };
+    executionResults?: Array<{ result?: { errorMessage?: string | null } }>;
+  };
+
+  return candidate.executionInfo?.executionResult ?? candidate.executionResults?.[0]?.result ?? null;
+}
+
+function normalizeHash(value: string): string {
+  return value.replace(/^hash-/, "").replace(/^contract-/, "");
+}
+
 function hasSigningKey(config: CasperAdapterConfig): boolean {
   return Boolean(config.privateKeyHex || config.privateKeyPem || config.privateKeyPemFile);
 }
@@ -253,7 +350,7 @@ function readPrivateKey(config: CasperAdapterConfig) {
   }
 
   if (config.privateKeyPemFile) {
-    return PrivateKey.fromPem(readFileSync(config.privateKeyPemFile, "utf8"), algorithm);
+    return PrivateKey.fromPem(readFileSync(resolveConfigFile(config.privateKeyPemFile), "utf8"), algorithm);
   }
 
   if (config.privateKeyHex) {
@@ -263,6 +360,28 @@ function readPrivateKey(config: CasperAdapterConfig) {
   throw new Error(
     "CASPER_PRIVATE_KEY_HEX, CASPER_PRIVATE_KEY_PEM, or CASPER_PRIVATE_KEY_PEM_FILE is required for real mode."
   );
+}
+
+function resolveConfigFile(filePath: string): string {
+  if (path.isAbsolute(filePath)) {
+    return filePath;
+  }
+
+  let current = process.cwd();
+  for (let depth = 0; depth < 6; depth += 1) {
+    const candidate = path.resolve(current, filePath);
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+
+    const parent = path.dirname(current);
+    if (parent === current) {
+      break;
+    }
+    current = parent;
+  }
+
+  return path.resolve(process.cwd(), filePath);
 }
 
 function deriveTransferId(reportHash: string): number {
