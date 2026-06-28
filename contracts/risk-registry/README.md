@@ -59,15 +59,32 @@ Deploy it to Casper Testnet with:
 npm run casper:deploy:registry
 ```
 
-The buildathon prototype still keeps the native-transfer attestation path as a fallback proof. The
-next integration step is to call this registry contract's `record_credential` entry point from the
-API and show the contract hash in the frontend.
+The buildathon prototype has deployed this contract and called its `record_credential` entry point
+from the TypeScript API through `casper-js-sdk`.
 
-## Planned Integration Steps
+Deployment:
 
-1. Install Rust, Wasm target, and Odra tooling.
-2. Compile this contract to Wasm.
-3. Deploy it on Casper Testnet.
-4. Add `CASPER_RISK_REGISTRY_HASH` to `.env`.
-5. Implement a `CasperRegistryAttestationAdapter` that calls `record_credential`.
-6. Show the contract package hash and transaction hash in the frontend.
+```text
+https://testnet.cspr.live/transaction/735dab5995084abfe4494398ff6f3c6677055a4d5025b79918ae9c4a202a93b9
+```
+
+Registry write:
+
+```text
+https://testnet.cspr.live/transaction/096907b2961fe30d01d0267a2876922225d2b43e37f124a40608330e500341f0
+```
+
+Contract hash:
+
+```text
+aeda10dacdee9cefa8b857c3f6c8a0b2edeb6c19421f16189016ab1a2359b391
+```
+
+## Integration Checklist
+
+1. Compile this contract to Wasm.
+2. Deploy it on Casper Testnet.
+3. Add `CASPER_RISK_REGISTRY_HASH` to `.env`.
+4. Call `record_credential` from `CasperRegistryAttestationAdapter`.
+5. Show the contract hash and transaction hash in the frontend.
+6. Keep `native-transfer-memo` as a fallback proof path.

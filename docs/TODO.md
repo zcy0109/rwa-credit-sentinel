@@ -24,6 +24,8 @@
 - [x] Store and display transaction hash.
 - [x] Document Casper Testnet setup.
 - [x] Produce real Casper Testnet native-transfer attestation hash.
+- [x] Deploy native Casper Risk Registry contract to Testnet.
+- [x] Produce real `record_credential` contract-call transaction hash.
 
 ## Phase 3 - Frontend Demo
 
@@ -55,10 +57,10 @@
 
 ## Phase 6 - Casper Contract Registry
 
-- [x] Scaffold Risk Registry contract source blueprint.
+- [x] Implement Risk Registry contract source.
 - [x] Map TypeScript risk credential fields to contract arguments.
 - [x] Document contract entry points and deployment path.
-- [ ] Install Rust/Cargo and Odra tooling.
-- [ ] Compile contract to Wasm.
-- [ ] Deploy contract to Casper Testnet.
-- [ ] Replace native-transfer real adapter with contract-call adapter.
+- [x] Compile contract to Casper-compatible Wasm.
+- [x] Deploy contract to Casper Testnet.
+- [x] Replace native-transfer real adapter with contract-call adapter.
+- [x] Display deployed contract and registry write proof in the frontend.

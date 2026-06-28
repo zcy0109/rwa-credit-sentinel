@@ -20,6 +20,7 @@
     "casper:preflight": "npm --workspace packages/casper run preflight:real",
     "casper:smoke:real": "npm --workspace packages/casper run smoke:real",
     "casper:deploy:registry": "npm --workspace packages/casper run deploy:registry",
+    "casper:read:registry": "npm --workspace packages/casper run read:registry",
     "lint": "npm-run-all --parallel lint:*",
     "lint:api": "npm --workspace apps/api run lint",
     "lint:web": "npm --workspace apps/web run lint"

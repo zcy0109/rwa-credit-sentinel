@@ -28,8 +28,8 @@
 ## Final-Round Readiness
 
 - [x] Multi-agent roles are visible in the product.
-- [x] Casper contract registry path is designed and scaffolded.
-- [ ] Casper contribution is more than a cosmetic transfer in deployed testnet form.
+- [x] Casper contract registry path is designed, deployed, and called on Testnet.
+- [x] Casper contribution is more than a cosmetic transfer in deployed testnet form.
 - [x] RWA/DeFi use case is credible and concrete.
 - [x] Roadmap explains how this could become a real Casper ecosystem tool.
 - [x] Credential registry makes the DeFi integration story queryable.

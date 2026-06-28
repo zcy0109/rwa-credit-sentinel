@@ -4,18 +4,28 @@ Target length: 3-5 minutes.
 
 ## 0:00 - Problem
 
-RWA lending protocols need risk signals from off-chain assets, but PDF reports and private databases are hard to verify. RWA Credit Sentinel turns an agentic risk analysis into a Casper-anchored credential.
+RWA lending protocols need risk signals from off-chain assets, but PDF reports and private databases are hard to verify. RWA Credit Sentinel turns an agentic risk analysis into a Casper registry credential.
 
 Show the top proof strip first:
 
-- Real Casper Testnet transaction
-- Block height
-- Transfer ID
-- Explorer link
+- Deployed Casper Testnet contract.
+- Real `record_credential` registry write.
+- Contract hash.
+- Explorer links.
 
-Clarify that this is the published Testnet proof from the verified buildathon run. The interactive assessment below runs in local mock mode by default so judges can repeat it without spending Testnet CSPR.
+Use these links:
 
-## 0:30 - Intake
+```text
+Contract deployment:
+https://testnet.cspr.live/transaction/735dab5995084abfe4494398ff6f3c6677055a4d5025b79918ae9c4a202a93b9
+
+Credential write:
+https://testnet.cspr.live/transaction/096907b2961fe30d01d0267a2876922225d2b43e37f124a40608330e500341f0
+```
+
+Clarify that the local interactive demo runs in mock mode by default so judges can repeat it without using private keys or Testnet CSPR.
+
+## 0:35 - Intake
 
 Show the financing request form. The sample request is an invoice-backed asset with requested amount, maturity, debtor profile, asset description, and evidence URLs.
 
@@ -32,30 +42,44 @@ Click "Run agent assessment". Explain the four agents:
 
 Show the risk score, confidence, and decision. Explain that the decision can drive a financing pool gate: eligible, review, or rejected.
 
-## 2:35 - Casper Credential
+## 2:30 - Casper Credential
 
 Show the Casper credential panel:
 
-- Network
-- Method
-- Transfer ID
-- Transaction hash
-- Report hash
-- Evidence hash
+- Network.
+- Method.
+- Transaction hash.
+- Report hash.
+- Evidence hash.
+- Contract hash and entry point when running in real mode.
 
-Explain that the panel is a live credential preview when the app runs in local mock mode. Real mode uses `casper-js-sdk` to send a Casper Testnet native transfer transaction, with the transfer ID derived from the report hash as an on-chain memo. This anchors the off-chain risk credential to Casper.
+Explain that real mode uses `casper-js-sdk` to submit a `record_credential` call to the deployed Risk Registry contract.
 
-Use this transaction as the proof:
+Mention the readback command:
 
-```text
-https://testnet.cspr.live/transaction/34e2e8d36239d4f96dc2d5e38337a1834c6289ebbfc4ca24e99619ccfc6d1b65
+```bash
+npm run casper:read:registry
 ```
 
-## 3:25 - Registry
+It reads the written `invoice:demo-acme-batch` credential back from Casper RPC.
 
-Show the recent credential registry. Explain that a DeFi protocol or underwriter can query the latest risk credential by asset ID through the API, then compare the report hash and evidence hash with the Casper transaction anchor.
+## 3:10 - Registry Path
 
-## 3:55 - Architecture
+Show the registry path panel:
+
+- Entry point: `record_credential`.
+- Status: `ready-for-contract-call`.
+- Contract hash.
+- JSON runtime arguments.
+
+Explain that the same arguments are what the real adapter submitted to Casper Testnet in the verified smoke run.
+The readback script confirms the contract dictionary stores the same asset ID, risk score, decision, report hash, and evidence hash.
+
+## 3:45 - Local Credential Registry
+
+Show the recent credential registry. Explain that a DeFi protocol or underwriter can query the latest risk credential by asset ID through the API, then compare the report hash and evidence hash with the Casper registry transaction.
+
+## 4:10 - Architecture
 
 Show README or repo structure:
 
@@ -63,14 +87,20 @@ Show README or repo structure:
 - `apps/api`
 - `packages/shared`
 - `packages/casper`
+- `contracts/risk-registry`
 
-Mention that the qualification prototype is local-demo ready, verified with `npm run verify`, and already includes a real Casper Testnet attestation.
+Mention that the project is verified with:
 
-## 4:35 - Roadmap
+```bash
+npm run verify
+```
 
-Explain final-round upgrades:
+## 4:40 - Roadmap
 
-- Casper report registry contract. Show `contracts/risk-registry` and explain that it stores `asset_id`, `risk_score`, `decision`, `report_hash`, and `evidence_hash` through `record_credential`.
+Explain next upgrades:
+
+- Contract readback UI for live `get_credential` verification.
+- Historical credential versions.
 - x402 pay-per-report agent flow.
 - More RWA data connectors.
 - Underwriter dashboard and DeFi protocol API.

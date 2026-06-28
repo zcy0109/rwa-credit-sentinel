@@ -14,7 +14,7 @@ async function main() {
   await step("Run Casper mock smoke", () =>
     run(npmCommand, ["--workspace", "packages/casper", "run", "smoke:mock"])
   );
-  await step("Check Risk Registry contract blueprint", checkContractBlueprint);
+  await step("Check Risk Registry contract source", checkContractSource);
   await step("Check built frontend includes registry path", checkFrontendBundle);
   await step("Exercise API report and credential registry", exerciseApi);
   await optionalStep("Check Rust/Cargo availability", () => run("cargo", ["--version"]));
@@ -52,7 +52,7 @@ async function optionalStep(name, fn) {
   }
 }
 
-function checkContractBlueprint() {
+function checkContractSource() {
   const contractPath = join(root, "contracts", "risk-registry", "src", "lib.rs");
   const readmePath = join(root, "contracts", "risk-registry", "README.md");
 
@@ -60,11 +60,11 @@ function checkContractBlueprint() {
   assert(existsSync(readmePath), "contracts/risk-registry/README.md is missing");
 
   const source = readFileSync(contractPath, "utf8");
-  for (const token of ["record_credential", "get_credential", "RiskCredentialRecorded"]) {
+  for (const token of ["record_credential", "get_credential", "owner", "records"]) {
     assert(source.includes(token), `Contract source does not include ${token}`);
   }
 
-  return "Risk Registry blueprint contains write/read entry points and event.";
+  return "Risk Registry contract source contains write/read/owner entry points.";
 }
 
 function checkFrontendBundle() {
@@ -79,11 +79,19 @@ function checkFrontendBundle() {
   assert(bundleText.includes("record_credential"), "frontend bundle is missing record_credential");
   assert(bundleText.includes("Verified Casper Evidence"), "frontend bundle is missing Casper proof strip");
   assert(
-    bundleText.includes("34e2e8d36239d4f96dc2d5e38337a1834c6289ebbfc4ca24e99619ccfc6d1b65"),
-    "frontend bundle is missing the real Casper Testnet transaction hash"
+    bundleText.includes("735dab5995084abfe4494398ff6f3c6677055a4d5025b79918ae9c4a202a93b9"),
+    "frontend bundle is missing the real Casper contract deployment hash"
+  );
+  assert(
+    bundleText.includes("096907b2961fe30d01d0267a2876922225d2b43e37f124a40608330e500341f0"),
+    "frontend bundle is missing the real Casper registry write hash"
+  );
+  assert(
+    bundleText.includes("aeda10dacdee9cefa8b857c3f6c8a0b2edeb6c19421f16189016ab1a2359b391"),
+    "frontend bundle is missing the deployed contract hash"
   );
 
-  return "Frontend bundle includes the Casper registry path panel and real proof strip.";
+  return "Frontend bundle includes contract deployment, registry write, and registry path proof.";
 }
 
 async function exerciseApi() {
