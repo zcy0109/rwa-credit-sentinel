@@ -4,9 +4,14 @@ Agentic RWA credit-risk assessment with a real Casper Testnet credential registr
 
 Built for **Casper Agentic Buildathon 2026**.
 
+[![CI](https://github.com/zcy0109/rwa-credit-sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/zcy0109/rwa-credit-sentinel/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/zcy0109/rwa-credit-sentinel/actions/workflows/codeql.yml/badge.svg)](https://github.com/zcy0109/rwa-credit-sentinel/actions/workflows/codeql.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 ## Submission Snapshot
 
 - GitHub: https://github.com/zcy0109/rwa-credit-sentinel
+- Recommended repository topics: `casper-blockchain`, `casper-network`, `buildathon`, `rwa`, `defi`, `web3`, `agentic-ai`
 - Deployed Casper Testnet contract: `aeda10dacdee9cefa8b857c3f6c8a0b2edeb6c19421f16189016ab1a2359b391`
 - Contract package: `2765865230aba876704f1b793b2a124adcdf532336c9b455de692ea885637df3`
 - Contract deployment: https://testnet.cspr.live/transaction/735dab5995084abfe4494398ff6f3c6677055a4d5025b79918ae9c4a202a93b9
@@ -18,7 +23,7 @@ Built for **Casper Agentic Buildathon 2026**.
 ## Judge Quickstart
 
 ```bash
-npm install
+npm ci
 npm run verify
 npm run dev
 ```
@@ -30,6 +35,16 @@ http://127.0.0.1:5173
 ```
 
 The app runs in mock mode by default so judges can review it without secrets or Testnet CSPR. The repository and UI include real Casper Testnet evidence from the deployed contract and a verified registry write.
+
+## Repository Quality
+
+This repository includes:
+
+- GitHub Actions CI for linting, tests, builds, and the submission verification script.
+- CodeQL analysis for JavaScript and TypeScript.
+- Dependabot configuration for npm and GitHub Actions updates.
+- Security reporting guidance in `SECURITY.md`.
+- Contributor guidance, issue templates, a pull request template, a code of conduct, and an MIT license.
 
 ## Thesis
 
