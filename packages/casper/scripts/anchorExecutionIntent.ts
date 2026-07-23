@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import {
   defaultVaultPolicy,
   evaluateExecution,
+  finalsEvidence,
+  SAMPLE_EVIDENCE_BUNDLE_ID,
   type ExecutionContext,
   type RiskReport
 } from "@rwa-sentinel/shared";
@@ -12,28 +14,31 @@ dotenv.config({ path: new URL("../../../.env", import.meta.url), quiet: true });
 dotenv.config({ quiet: true });
 
 const report: RiskReport = {
-  assetId: "invoice:demo-acme-batch",
+  assetId: finalsEvidence.assetId,
   request: {
-    assetName: "Acme Invoice Batch",
+    assetName: "Acme Export Invoice Pool Finals",
     assetType: "invoice",
     requestedAmountUsd: 125_000,
-    maturityDays: 45,
+    maturityDays: 30,
     debtorName: "Acme Manufacturing",
     debtorCountry: "US",
-    description: "Verified invoice batch used for the finals execution-intent proof.",
+    description:
+      "A recurring invoice pool backed by verified purchase orders, delivery confirmations, and a predictable payment history from an established industrial buyer.",
     publicEvidenceUrls: [
       "https://example.com/invoice-batch",
       "https://example.com/purchase-orders",
-      "https://example.com/delivery-records"
-    ]
+      "https://example.com/delivery-records",
+      "https://example.com/payment-history"
+    ],
+    evidenceBundleId: SAMPLE_EVIDENCE_BUNDLE_ID
   },
-  riskScore: 78,
+  riskScore: 80,
   decision: "eligible",
   confidence: 92,
   factors: [],
   agentTrace: [],
-  evidenceHash: "4df81df9ea02d7448837e020ba84ebc45904cf52adeefe628cb31f5aa8f65d0aa",
-  reportHash: "9fd81df9ea02d7448837e020ba84ebc45904cf52adeefe628cb31f5aa8f65d0ed",
+  evidenceHash: finalsEvidence.evidenceHash,
+  reportHash: finalsEvidence.reportHash,
   createdAt: "2026-07-23T00:00:00.000Z"
 };
 

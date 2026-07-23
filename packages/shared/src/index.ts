@@ -1,3 +1,5 @@
+import type { EvidenceManifest } from "./evidence.js";
+
 export type AssetType = "invoice" | "trade_receivable" | "real_estate" | "commodity" | "other";
 
 export type FinancingRequest = {
@@ -9,6 +11,7 @@ export type FinancingRequest = {
   debtorCountry: string;
   description: string;
   publicEvidenceUrls: string[];
+  evidenceBundleId?: string;
 };
 
 export type RiskFactor = {
@@ -22,8 +25,21 @@ export type RiskDecision = "eligible" | "review" | "rejected";
 
 export type AgentStep = {
   agent: "Data Agent" | "Risk Agent" | "Verification Agent" | "Decision Agent";
+  tool: string;
+  status: "completed" | "attention" | "blocked";
   summary: string;
   outputs: Record<string, string | number | boolean>;
+};
+
+export type AgentProvenance = {
+  schemaVersion: "rwa-agent-provenance/v1";
+  workflowVersion: "finals-v2";
+  runtimeMode: "bounded-deterministic";
+  inputHash: string;
+  evidenceAuthority: "content-integrity-only";
+  decisionAuthority: "server-policy";
+  modelAuthority: "analysis-only";
+  privateKeyAccess: false;
 };
 
 export type RiskReport = {
@@ -34,7 +50,9 @@ export type RiskReport = {
   confidence: number;
   factors: RiskFactor[];
   agentTrace: AgentStep[];
+  provenance?: AgentProvenance;
   evidenceHash: string;
+  evidenceManifest?: EvidenceManifest;
   reportHash: string;
   createdAt: string;
 };
@@ -92,3 +110,5 @@ export function decideFinancingGate(score: number): FinancingGateResult {
 
 export * from "./execution.js";
 export * from "./benchmark.js";
+export * from "./finalsEvidence.js";
+export * from "./evidence.js";

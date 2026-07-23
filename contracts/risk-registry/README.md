@@ -86,13 +86,13 @@ https://testnet.cspr.live/transaction/694147496b0af6dfe83bf0a32cecd16ae6e09b8a14
 Registry write:
 
 ```text
-https://testnet.cspr.live/transaction/2267d02bb600d20d500a6c670bdda5576ef5ab950db04f63302266538a1159d9
+https://testnet.cspr.live/transaction/b52e4471e09e34a25a5b059bf19ba47764772d46f2c4b328ec6cf57784e0f2ec
 ```
 
 Execution intent write:
 
 ```text
-https://testnet.cspr.live/transaction/e84e316b075fd257f42e91229cdf7762f8089993b01ea64f5e989303360886f6
+https://testnet.cspr.live/transaction/78e23db0c0d8aa1f4077c9983fa8b6e394730c21bb6773458c544299456fa3e7
 ```
 
 Contract hash:

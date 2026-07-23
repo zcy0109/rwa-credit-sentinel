@@ -15,6 +15,14 @@ export {
   type RiskRegistryCallPreview,
   type RiskRegistryRecordArgs
 } from "./registryContract.js";
+export {
+  readExecutionIntentState,
+  readRiskCredentialState,
+  type CasperDictionaryRead,
+  type CasperExecutionIntentRecord,
+  type CasperRiskCredentialRecord,
+  type CasperStateReaderOptions
+} from "./stateReader.js";
 import { RISK_REGISTRY_ENTRY_POINTS, toRiskRegistryRecordArgs } from "./registryContract.js";
 import { EXECUTION_ENTRY_POINTS, toExecutionIntentRecordArgs } from "./executionContract.js";
 

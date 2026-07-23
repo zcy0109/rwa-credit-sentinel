@@ -87,16 +87,18 @@ function checkFrontendBundle() {
   assert(bundleText.includes("record_credential"), "frontend bundle is missing record_credential");
   assert(bundleText.includes("record_execution_intent"), "frontend bundle is missing record_execution_intent");
   assert(bundleText.includes("Anchor execution intent"), "frontend bundle is missing execution anchor action");
+  assert(bundleText.includes("Add evidence files"), "frontend bundle is missing evidence intake");
+  assert(bundleText.includes("Decision receipt"), "frontend bundle is missing decision receipt export");
   assert(
     bundleText.includes("694147496b0af6dfe83bf0a32cecd16ae6e09b8a141087f6cc0bcffea0f252c0"),
     "frontend bundle is missing the finals contract deployment hash"
   );
   assert(
-    bundleText.includes("2267d02bb600d20d500a6c670bdda5576ef5ab950db04f63302266538a1159d9"),
+    bundleText.includes("b52e4471e09e34a25a5b059bf19ba47764772d46f2c4b328ec6cf57784e0f2ec"),
     "frontend bundle is missing the finals credential write hash"
   );
   assert(
-    bundleText.includes("e84e316b075fd257f42e91229cdf7762f8089993b01ea64f5e989303360886f6"),
+    bundleText.includes("78e23db0c0d8aa1f4077c9983fa8b6e394730c21bb6773458c544299456fa3e7"),
     "frontend bundle is missing the execution-intent write hash"
   );
 
@@ -124,6 +126,38 @@ async function exerciseApi() {
 
   try {
     await waitForHealth();
+    const evidenceResponse = await fetch(`http://127.0.0.1:${apiPort}/api/evidence/sample`);
+    assert(evidenceResponse.ok, `GET /api/evidence/sample returned ${evidenceResponse.status}`);
+    const evidenceBundle = await evidenceResponse.json();
+    assert(evidenceBundle.manifest?.synthetic === true, "sample evidence must be marked synthetic");
+    assert(evidenceBundle.manifest?.documentCount === 4, "sample evidence must contain four documents");
+    assert(evidenceBundle.manifest?.manifestHash?.length === 64, "evidence manifest hash is missing");
+
+    const intakeResponse = await fetch(`http://127.0.0.1:${apiPort}/api/evidence/intake`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        label: "Verification invoice evidence",
+        files: [
+          {
+            name: "invoice-register.json",
+            mediaType: "application/json",
+            evidenceType: "invoice_register",
+            contentBase64: Buffer.from(
+              JSON.stringify([{ invoiceNumber: "VERIFY-001", amount: 125000 }])
+            ).toString("base64")
+          }
+        ]
+      })
+    });
+    assert(intakeResponse.ok, `POST /api/evidence/intake returned ${intakeResponse.status}`);
+    const uploadedEvidence = await intakeResponse.json();
+    assert(uploadedEvidence.manifest?.synthetic === false, "uploaded evidence must not be synthetic");
+    assert(
+      uploadedEvidence.claimVerification === "not-performed",
+      "uploaded evidence must disclose that claims were not verified"
+    );
+
     const reportResponse = await fetch(`http://127.0.0.1:${apiPort}/api/reports`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -136,7 +170,8 @@ async function exerciseApi() {
         debtorCountry: "US",
         description:
           "Thirty invoices from a recurring industrial buyer with public purchase-order references and predictable 45-day repayment behavior.",
-        publicEvidenceUrls: ["https://example.com/invoice-a", "https://example.com/purchase-order-a"]
+        publicEvidenceUrls: ["https://example.com/invoice-a", "https://example.com/purchase-order-a"],
+        evidenceBundleId: "acme-export-invoice-pool-v1"
       })
     });
 
@@ -146,6 +181,10 @@ async function exerciseApi() {
     assert(typeof credential.report?.riskScore === "number", "riskScore missing");
     assert(credential.report?.reportHash, "reportHash missing");
     assert(credential.report?.evidenceHash, "evidenceHash missing");
+    assert(
+      credential.report?.evidenceManifest?.manifestHash === evidenceBundle.manifest.manifestHash,
+      "report is not bound to the sample evidence manifest"
+    );
     assert(credential.attestation?.transactionHash?.startsWith("mock-"), "mock transaction hash missing");
     assert(credential.registryCall?.entryPoint === "record_credential", "registry call entry point missing");
     assert(
@@ -205,7 +244,15 @@ async function exerciseApi() {
     assert(benchmark.agreementRate === 100, "benchmark decision agreement must be 100%");
     assert(benchmark.coveredChecks?.length === 9, "benchmark must cover all nine policy checks");
 
-    return `API produced credential, ${execution.evaluation.decision} intent, and ${anchored.attestation.transactionHash}.`;
+    const receiptResponse = await fetch(
+      `http://127.0.0.1:${apiPort}/api/execution/receipts/${execution.evaluation.intent.intentId}`
+    );
+    assert(receiptResponse.ok, `GET decision receipt returned ${receiptResponse.status}`);
+    const receipt = await receiptResponse.json();
+    assert(receipt.receiptHash?.length === 64, "decision receipt hash is missing");
+    assert(receipt.safety?.movesFunds === false, "receipt must disclose that the prototype moves no funds");
+
+    return `API produced credential, ${execution.evaluation.decision} intent, ${anchored.attestation.transactionHash}, and a hashed decision receipt.`;
   } finally {
     server.kill();
     if (server.exitCode === null) {

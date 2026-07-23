@@ -16,6 +16,17 @@ import { buildRiskReport } from "./services/riskEngine.js";
 import { credentialRegistry } from "./services/credentialRegistry.js";
 import { executionRegistry } from "./services/executionRegistry.js";
 import { sha256Hex } from "./services/hash.js";
+import { buildDecisionReceipt } from "./services/decisionReceipt.js";
+import {
+  verifyFinalsState,
+  type FinalsStateVerification
+} from "./services/finalsVerification.js";
+import {
+  createUploadedEvidenceBundle,
+  getSampleEvidenceBundle,
+  resolveEvidenceManifest,
+  type UploadedEvidenceFile
+} from "./services/evidenceBundle.js";
 
 const financingRequestSchema = z.object({
   assetName: z.string().min(2),
@@ -25,7 +36,28 @@ const financingRequestSchema = z.object({
   debtorName: z.string().min(2),
   debtorCountry: z.string().min(2),
   description: z.string().min(10),
-  publicEvidenceUrls: z.array(z.string().url()).default([])
+  publicEvidenceUrls: z.array(z.string().url()).default([]),
+  evidenceBundleId: z.string().min(4).max(80).optional()
+});
+
+const evidenceTypeSchema = z.enum([
+  "invoice_register",
+  "purchase_order",
+  "delivery_confirmation",
+  "payment_history",
+  "other"
+]);
+
+const evidenceIntakeSchema = z.object({
+  label: z.string().min(2).max(120),
+  files: z.array(
+    z.object({
+      name: z.string().min(1).max(120),
+      mediaType: z.enum(["application/json", "text/csv", "text/plain", "application/pdf"]),
+      evidenceType: evidenceTypeSchema,
+      contentBase64: z.string().min(1).max(1_400_000)
+    })
+  ).min(1).max(6)
 });
 
 const executionContextSchema = z.object({
@@ -48,13 +80,18 @@ const anchorRequestSchema = z.object({
   intentId: z.string().min(2)
 });
 
-export function createApp() {
+export type AppDependencies = {
+  verifyFinalsState?: () => Promise<FinalsStateVerification>;
+};
+
+export function createApp(dependencies: AppDependencies = {}) {
   const app = express();
   const casper = createCasperAdapterFromEnv();
   const executionAdapter = createExecutionIntentAdapterFromEnv();
+  const verifyPublishedFinalsState = dependencies.verifyFinalsState ?? verifyFinalsState;
 
   app.use(cors());
-  app.use(express.json({ limit: "1mb" }));
+  app.use(express.json({ limit: "6mb" }));
 
   app.get("/health", (_req, res) => {
     res.json({ ok: true, service: "rwa-credit-sentinel-api" });
@@ -79,6 +116,42 @@ export function createApp() {
     res.json(runExecutionBenchmark());
   });
 
+  app.get("/api/evidence/sample", async (_req, res, next) => {
+    try {
+      res.json(await getSampleEvidenceBundle());
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/evidence/intake", async (req, res, next) => {
+    try {
+      const input = evidenceIntakeSchema.parse(req.body);
+      res.json(
+        await createUploadedEvidenceBundle(
+          input.label,
+          input.files as UploadedEvidenceFile[]
+        )
+      );
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        next(error);
+        return;
+      }
+      res.status(400).json({
+        error: error instanceof Error ? error.message : "Evidence intake failed"
+      });
+    }
+  });
+
+  app.get("/api/casper/verify-finals", async (_req, res, next) => {
+    try {
+      res.json(await verifyPublishedFinalsState());
+    } catch (error) {
+      next(error);
+    }
+  });
+
   app.get("/api/execution/intents", (_req, res) => {
     res.json({ intents: executionRegistry.list() });
   });
@@ -91,6 +164,29 @@ export function createApp() {
     }
 
     res.json(record);
+  });
+
+  app.get("/api/execution/receipts/:intentId", async (req, res, next) => {
+    try {
+      const execution = executionRegistry.get(req.params.intentId);
+      if (!execution) {
+        res.status(404).json({ error: "Execution intent not found." });
+        return;
+      }
+
+      const credential = credentialRegistry.get(execution.evaluation.intent.assetId);
+      if (!credential) {
+        res.status(404).json({ error: "Risk credential not found." });
+        return;
+      }
+
+      if (req.query.download === "1") {
+        res.attachment(`rwa-decision-receipt-${execution.evaluation.intent.intentId}.json`);
+      }
+      res.json(await buildDecisionReceipt(credential, execution));
+    } catch (error) {
+      next(error);
+    }
   });
 
   app.post("/api/execution/evaluate", (req, res) => {
@@ -138,7 +234,8 @@ export function createApp() {
   app.post("/api/reports", async (req, res, next) => {
     try {
       const request = financingRequestSchema.parse(req.body);
-      const report = await buildRiskReport(request);
+      const evidenceManifest = await resolveEvidenceManifest(request.evidenceBundleId);
+      const report = await buildRiskReport(request, evidenceManifest);
       const attestationInput = {
         assetId: report.assetId,
         riskScore: report.riskScore,

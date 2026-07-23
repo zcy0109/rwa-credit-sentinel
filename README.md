@@ -18,14 +18,15 @@ The finals contract exposes two application-level state transitions:
 | Evidence | Casper Testnet proof |
 | --- | --- |
 | Contract deploy | [`694147...52c0`](https://testnet.cspr.live/transaction/694147496b0af6dfe83bf0a32cecd16ae6e09b8a141087f6cc0bcffea0f252c0) |
-| Risk credential write | [`2267d0...59d9`](https://testnet.cspr.live/transaction/2267d02bb600d20d500a6c670bdda5576ef5ab950db04f63302266538a1159d9) |
-| Execution intent write | [`e84e31...86f6`](https://testnet.cspr.live/transaction/e84e316b075fd257f42e91229cdf7762f8089993b01ea64f5e989303360886f6) |
+| Risk credential write | [`b52e44...f2ec`](https://testnet.cspr.live/transaction/b52e4471e09e34a25a5b059bf19ba47764772d46f2c4b328ec6cf57784e0f2ec) |
+| Execution intent write | [`78e23d...a3e7`](https://testnet.cspr.live/transaction/78e23db0c0d8aa1f4077c9983fa8b6e394730c21bb6773458c544299456fa3e7) |
 
 - Contract hash: `e5c63c54f0c147703548976c174087d4a8e087da191adc2f466fa101e1154a3a`
 - Package hash: `aacf4a08413e873bb3f67b2d7ce78230e3d3e2bde558c2203bd55b1a37853345`
-- Published asset: `invoice:demo-acme-batch`
-- Published intent: `intent-09f5ecde`
-- Intent hash: `a22b8596a3648937b165985d94c045a7660e9b1f1bee8fdac414407987e71a6e`
+- Published asset: `invoice:acme-export-invoice-pool-finals`
+- Published intent: `intent-b781ee81`
+- Evidence manifest hash: `06e0a311d67f64e116fc2f0f134bbfa9b438e8f0e7c733d636080ff8a2a3420d`
+- Intent hash: `7485dc82989896680b6f6353c170ab9e4327541973c3dabca0118c57d560aa0b`
 - Decision: `Approve`
 - Authorization: `policy_key`
 - Principal cap: `$125,000`
@@ -33,6 +34,25 @@ The finals contract exposes two application-level state transitions:
 
 The original qualification contract remains verifiable in
 [`contracts/risk-registry/DEPLOYMENTS.md`](contracts/risk-registry/DEPLOYMENTS.md).
+
+The app also exposes **Verify live contract state**. It reads both dictionaries from Casper RPC
+without a wallet and compares 13 contract fields with the published evidence. This is state
+verification, not a screenshot or a cached transaction claim.
+
+## Qualification Prototype vs Finals Product
+
+| Capability | Qualification prototype | Finals v2 |
+| --- | --- | --- |
+| Agent workflow | Four underwriting agents | Eight underwriting and bounded-execution agents |
+| Casper evidence | Risk credential write | Risk credential and execution-intent state |
+| Capital authority | Financing recommendation | Nine locked policy checks and explicit authorization |
+| Failure handling | Eligible / review / rejected | Approve / reviewer multisig / zero-capital block |
+| Evidence integrity | URL-reference digest | Four-document content hashes and manifest hash |
+| Verification | CLI readback | One-click live RPC comparison of 13 fields plus CLI |
+| Evaluation | Unit tests | 30-case policy benchmark, tests, CodeQL, and audit bundle |
+
+The detailed evolution and deliberately excluded scope are documented in
+[`docs/EVOLUTION.md`](docs/EVOLUTION.md).
 
 ## Judge Quickstart
 
@@ -50,14 +70,15 @@ and is never presented as the current local run.
 
 ### Five-minute test path
 
-1. Select **Load sample**, then **Run underwriting agents**.
-2. Review the score, risk factors, report hash, evidence hash, and credential mode.
-3. Keep **Autonomous** mode and the default vault policy.
-4. Select **Evaluate capital action** and inspect all nine policy checks.
-5. Select **Anchor execution intent**. In local mode this creates a deterministic mock proof.
-6. Download the audit bundle.
-7. Uncheck **Credential verified** and evaluate again to see capital allocation blocked.
-8. Restore the credential, set collateral below `1.15x`, and evaluate again to see reviewer routing.
+1. Select **Verify live contract state** and confirm `5/5` credential and `8/8` intent checks.
+2. Select **Load sample**, inspect the explicitly synthetic evidence pack, then run underwriting.
+3. Review four document hashes, the manifest hash, risk factors, report hash, and evidence hash.
+4. Keep **Autonomous** mode and select **Evaluate capital action**; inspect all nine checks.
+5. Raise advance rate above `80%` and evaluate to see reviewer-multisig routing.
+6. Clear **Credential verified** and evaluate to see a `$0` blocked capital allocation.
+7. Restore the sample, approve it, and download the complete audit bundle.
+8. **Anchor execution intent** uses a deterministic mock locally; use the published Testnet proof
+   for the already anchored finals record.
 
 ## Why Casper Is Required
 
@@ -65,7 +86,7 @@ An off-chain score alone can be changed, selectively disclosed, or detached from
 consumed it. This system creates a verifiable chain:
 
 ```text
-public evidence references
+content-hashed evidence manifest
   -> explainable risk report
   -> Casper risk credential
   -> deterministic vault policy
@@ -126,11 +147,13 @@ Read the two published records without a private key:
 
 ```bash
 npm run casper:read:registry
-npm run casper:read:execution -- --intent-id=intent-09f5ecde
+npm run casper:read:execution -- --intent-id=intent-b781ee81
 ```
 
 ## API
 
+- `POST /api/evidence/intake`
+- `GET /api/evidence/sample`
 - `POST /api/reports`
 - `GET /api/credentials`
 - `GET /api/credentials/:assetId`
@@ -138,11 +161,18 @@ npm run casper:read:execution -- --intent-id=intent-09f5ecde
 - `POST /api/execution/anchor`
 - `GET /api/execution/intents`
 - `GET /api/execution/intents/:intentId`
+- `GET /api/execution/receipts/:intentId`
 - `GET /api/execution/benchmark`
+- `GET /api/casper/verify-finals`
 
 The browser submits only an `intentId` to the anchor endpoint. The server retrieves the previously
 evaluated canonical intent and signs it outside the browser. Repeated anchor requests are
 idempotent.
+
+The evidence endpoint accepts small JSON, CSV, TXT, or PDF files and recomputes content hashes on
+the server. It proves byte integrity, not the truth of commercial claims. The receipt endpoint
+exports the complete evidence, agent, policy, current-run, and published-Testnet audit trail with
+its own receipt hash.
 
 ## Repository Layout
 
@@ -152,6 +182,11 @@ idempotent.
 - `packages/casper` - mock/real adapters, deployment, smoke, anchor, and RPC readback scripts.
 - `contracts/risk-registry` - native Rust/Wasm Casper registry.
 - `docs` - verification, submission, demo, threat model, and launch plan.
+
+Integration and honest external-review material:
+
+- [Integration guide](docs/INTEGRATION.md)
+- [Pilot validation protocol](docs/PILOT_VALIDATION.md)
 
 ## Verification
 
@@ -171,7 +206,7 @@ npm run casper:preflight
 npm run casper:smoke:real
 npm run casper:anchor:execution
 npm run casper:read:registry
-npm run casper:read:execution -- --intent-id=intent-09f5ecde
+npm run casper:read:execution -- --intent-id=intent-b781ee81
 ```
 
 Private keys, seed phrases, `.env`, and `.secrets/` must never be committed.

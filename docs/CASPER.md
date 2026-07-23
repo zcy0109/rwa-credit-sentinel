@@ -39,19 +39,19 @@ Entry point:
 record_credential
 
 Transaction:
-2267d02bb600d20d500a6c670bdda5576ef5ab950db04f63302266538a1159d9
+b52e4471e09e34a25a5b059bf19ba47764772d46f2c4b328ec6cf57784e0f2ec
 
 Explorer:
-https://testnet.cspr.live/transaction/2267d02bb600d20d500a6c670bdda5576ef5ab950db04f63302266538a1159d9
+https://testnet.cspr.live/transaction/b52e4471e09e34a25a5b059bf19ba47764772d46f2c4b328ec6cf57784e0f2ec
 
 Asset:
-invoice:demo-acme-batch
+invoice:acme-export-invoice-pool-finals
 
 Risk score / decision:
-78 / Eligible
+80 / Eligible
 
 Dictionary key:
-dictionary-11983ddea2cdd494ee8d074580ff8fec97e7a95b122380ecb44a6dc72f52e860
+dictionary-c8aa1ed7710b32d36e4af3a54101716cdc9d03932f3ee13b988bcf4da656d21b
 ```
 
 ### Execution intent
@@ -61,13 +61,13 @@ Entry point:
 record_execution_intent
 
 Transaction:
-e84e316b075fd257f42e91229cdf7762f8089993b01ea64f5e989303360886f6
+78e23db0c0d8aa1f4077c9983fa8b6e394730c21bb6773458c544299456fa3e7
 
 Explorer:
-https://testnet.cspr.live/transaction/e84e316b075fd257f42e91229cdf7762f8089993b01ea64f5e989303360886f6
+https://testnet.cspr.live/transaction/78e23db0c0d8aa1f4077c9983fa8b6e394730c21bb6773458c544299456fa3e7
 
 Intent:
-intent-09f5ecde
+intent-b781ee81
 
 Decision / authorization:
 Approve / policy_key
@@ -76,10 +76,10 @@ Principal cap:
 125000 USD
 
 Intent hash:
-a22b8596a3648937b165985d94c045a7660e9b1f1bee8fdac414407987e71a6e
+7485dc82989896680b6f6353c170ab9e4327541973c3dabca0118c57d560aa0b
 
 Dictionary key:
-dictionary-38a776d306dab1d720019cc91f9734e0a71570e0160affb5a567f50b621f9f96
+dictionary-ee8964520c7812b6cd1e5b5d6f6098b42a0f4f59b3f578929a4de054d7b2928d
 ```
 
 ## Public Readback
@@ -88,7 +88,7 @@ No private key is required:
 
 ```bash
 npm run casper:read:registry
-npm run casper:read:execution -- --intent-id=intent-09f5ecde
+npm run casper:read:execution -- --intent-id=intent-b781ee81
 ```
 
 The readback output must match the transaction evidence, report hash, decision, authorization,
@@ -137,7 +137,7 @@ npm run casper:deploy:registry
 npm run casper:smoke:real
 npm run casper:anchor:execution
 npm run casper:read:registry
-npm run casper:read:execution -- --intent-id=intent-09f5ecde
+npm run casper:read:execution -- --intent-id=intent-b781ee81
 ```
 
 ## Contract Build

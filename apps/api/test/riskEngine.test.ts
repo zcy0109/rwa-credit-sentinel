@@ -19,5 +19,14 @@ describe("buildRiskReport", () => {
     expect(report.reportHash).toHaveLength(64);
     expect(report.evidenceHash).toHaveLength(64);
     expect(report.agentTrace).toHaveLength(4);
+    expect(report.agentTrace.every((step) => step.tool.length > 0)).toBe(true);
+    expect(report.provenance).toMatchObject({
+      workflowVersion: "finals-v2",
+      runtimeMode: "bounded-deterministic",
+      evidenceAuthority: "content-integrity-only",
+      decisionAuthority: "server-policy",
+      privateKeyAccess: false
+    });
+    expect(report.provenance?.inputHash).toMatch(/^[a-f0-9]{64}$/);
   });
 });

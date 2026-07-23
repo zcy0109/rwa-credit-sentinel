@@ -10,6 +10,7 @@ import {
   Download,
   ExternalLink,
   FileCheck2,
+  FileUp,
   Gauge,
   Link2,
   Play,
@@ -21,10 +22,15 @@ import {
 } from "lucide-react";
 import {
   defaultVaultPolicy,
+  finalsEvidence,
+  qualificationEvidence,
+  SAMPLE_EVIDENCE_BUNDLE_ID,
+  testnetTransactionUrl,
   type AssetType,
   type CasperAttestation,
   type ExecutionContext,
   type ExecutionEvaluation,
+  type EvidenceManifest,
   type FinancingRequest,
   type RiskReport
 } from "@rwa-sentinel/shared";
@@ -32,26 +38,15 @@ import "./styles.css";
 
 const proof = {
   finals: {
-    deploymentHash: "694147496b0af6dfe83bf0a32cecd16ae6e09b8a141087f6cc0bcffea0f252c0",
-    deploymentUrl: "https://testnet.cspr.live/transaction/694147496b0af6dfe83bf0a32cecd16ae6e09b8a141087f6cc0bcffea0f252c0",
-    credentialWriteHash: "2267d02bb600d20d500a6c670bdda5576ef5ab950db04f63302266538a1159d9",
-    credentialWriteUrl: "https://testnet.cspr.live/transaction/2267d02bb600d20d500a6c670bdda5576ef5ab950db04f63302266538a1159d9",
-    intentWriteHash: "e84e316b075fd257f42e91229cdf7762f8089993b01ea64f5e989303360886f6",
-    intentWriteUrl: "https://testnet.cspr.live/transaction/e84e316b075fd257f42e91229cdf7762f8089993b01ea64f5e989303360886f6",
-    contractHash: "e5c63c54f0c147703548976c174087d4a8e087da191adc2f466fa101e1154a3a",
-    packageHash: "aacf4a08413e873bb3f67b2d7ce78230e3d3e2bde558c2203bd55b1a37853345",
-    credentialDictionaryKey: "dictionary-11983ddea2cdd494ee8d074580ff8fec97e7a95b122380ecb44a6dc72f52e860",
-    intentDictionaryKey: "dictionary-38a776d306dab1d720019cc91f9734e0a71570e0160affb5a567f50b621f9f96",
-    intentId: "intent-09f5ecde",
-    intentHash: "a22b8596a3648937b165985d94c045a7660e9b1f1bee8fdac414407987e71a6e"
+    ...finalsEvidence,
+    deploymentUrl: testnetTransactionUrl(finalsEvidence.deploymentHash),
+    credentialWriteUrl: testnetTransactionUrl(finalsEvidence.credentialWriteHash),
+    intentWriteUrl: testnetTransactionUrl(finalsEvidence.intentWriteHash)
   },
   qualification: {
-    deploymentHash: "735dab5995084abfe4494398ff6f3c6677055a4d5025b79918ae9c4a202a93b9",
-    deploymentUrl: "https://testnet.cspr.live/transaction/735dab5995084abfe4494398ff6f3c6677055a4d5025b79918ae9c4a202a93b9",
-    recordHash: "096907b2961fe30d01d0267a2876922225d2b43e37f124a40608330e500341f0",
-    recordUrl: "https://testnet.cspr.live/transaction/096907b2961fe30d01d0267a2876922225d2b43e37f124a40608330e500341f0",
-    contractHash: "aeda10dacdee9cefa8b857c3f6c8a0b2edeb6c19421f16189016ab1a2359b391",
-    packageHash: "2765865230aba876704f1b793b2a124adcdf532336c9b455de692ea885637df3"
+    ...qualificationEvidence,
+    deploymentUrl: testnetTransactionUrl(qualificationEvidence.deploymentHash),
+    recordUrl: testnetTransactionUrl(qualificationEvidence.recordHash)
   }
 };
 
@@ -100,14 +95,58 @@ type BenchmarkResponse = {
   coveredChecks: string[];
 };
 
+type ChainVerificationResponse = {
+  verified: boolean;
+  verifiedAt: string;
+  contractHash: string;
+  packageHash: string;
+  credential: {
+    dictionaryKey: string;
+    stateRootHash: string;
+    record: {
+      asset_id: string;
+      risk_score: number;
+      decision: string;
+      report_hash: string;
+      evidence_hash: string;
+    };
+    checks: Array<{ id: string; label: string; passed: boolean; expected: string; actual: string }>;
+  };
+  executionIntent: {
+    dictionaryKey: string;
+    stateRootHash: string;
+    record: {
+      intent_id: string;
+      decision: string;
+      authorization: string;
+      principal_cap_usd: number;
+      intent_hash: string;
+    };
+    checks: Array<{ id: string; label: string; passed: boolean; expected: string; actual: string }>;
+  };
+};
+
+type EvidenceIntakeResponse = {
+  manifest: EvidenceManifest;
+  extraction: Array<{
+    documentId: string;
+    format: string;
+    recordCount?: number;
+    fieldNames?: string[];
+  }>;
+  integrityStatement: string;
+  claimVerification: "not-performed";
+};
+
 const sampleForm: IntakeForm = {
-  assetName: "Acme Export Invoice Pool",
+  assetName: "Acme Export Invoice Pool Finals",
   assetType: "invoice",
   requestedAmountUsd: "125000",
   maturityDays: "30",
   debtorName: "Acme Manufacturing",
   debtorCountry: "US",
   description: "A recurring invoice pool backed by verified purchase orders, delivery confirmations, and a predictable payment history from an established industrial buyer.",
+  evidenceBundleId: SAMPLE_EVIDENCE_BUNDLE_ID,
   publicEvidenceUrls: [
     "https://example.com/invoice-batch",
     "https://example.com/purchase-orders",
@@ -133,6 +172,10 @@ export default function App() {
   const [execution, setExecution] = useState<ExecutionResponse | null>(null);
   const [context, setContext] = useState<ExecutionContext>(defaultContext);
   const [benchmark, setBenchmark] = useState<BenchmarkResponse | null>(null);
+  const [chainVerification, setChainVerification] = useState<ChainVerificationResponse | null>(null);
+  const [uploadedEvidence, setUploadedEvidence] = useState<EvidenceIntakeResponse | null>(null);
+  const [uploadingEvidence, setUploadingEvidence] = useState(false);
+  const [verifyingChain, setVerifyingChain] = useState(false);
   const [loading, setLoading] = useState<"underwrite" | "execute" | "anchor" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -151,6 +194,61 @@ export default function App() {
   function updateField(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
+    setReport(null);
+    setExecution(null);
+  }
+
+  function loadSample() {
+    setForm(sampleForm);
+    setUploadedEvidence(null);
+    setReport(null);
+    setExecution(null);
+    setError(null);
+  }
+
+  async function ingestEvidence(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    if (files.length === 0) return;
+
+    setUploadingEvidence(true);
+    setError(null);
+    setReport(null);
+    setExecution(null);
+    try {
+      const encodedFiles = await Promise.all(
+        files.map(async (file) => {
+          if (file.size > 1_000_000) {
+            throw new Error(`${file.name} exceeds the 1 MB evidence limit.`);
+          }
+          return {
+            name: file.name,
+            mediaType: supportedMediaType(file),
+            evidenceType: inferEvidenceType(file.name),
+            contentBase64: bytesToBase64(await file.arrayBuffer())
+          };
+        })
+      );
+      const response = await fetch("/api/evidence/intake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          label: `${form.assetName || "RWA"} submitted evidence`,
+          files: encodedFiles
+        })
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null) as { error?: string } | null;
+        throw new Error(payload?.error ?? "Evidence intake failed.");
+      }
+      const bundle = await response.json() as EvidenceIntakeResponse;
+      setUploadedEvidence(bundle);
+      setForm((current) => ({ ...current, evidenceBundleId: bundle.manifest.bundleId }));
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Evidence intake failed");
+    } finally {
+      setUploadingEvidence(false);
+    }
   }
 
   function buildRequest(): FinancingRequest {
@@ -222,25 +320,40 @@ export default function App() {
     }
   }
 
+  async function verifyLiveContractState() {
+    setVerifyingChain(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/casper/verify-finals");
+      if (!response.ok) throw new Error("Casper RPC readback is temporarily unavailable.");
+      setChainVerification((await response.json()) as ChainVerificationResponse);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Casper state verification failed");
+    } finally {
+      setVerifyingChain(false);
+    }
+  }
+
   function resetDemo() {
     setForm(sampleForm);
     setContext(defaultContext);
     setReport(null);
     setExecution(null);
+    setUploadedEvidence(null);
+    setChainVerification(null);
     setError(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function downloadAuditBundle() {
+  function downloadDecisionReceipt() {
     if (!report || !execution) return;
-    downloadJson(`rwa-audit-${execution.evaluation.intent.intentId}.json`, {
-      schemaVersion: "rwa-credit-sentinel-audit/v2",
-      generatedAt: new Date().toISOString(),
-      riskCredential: report,
-      executionRecord: execution,
-      verifiedCasperEvidence: proof,
-      benchmark
-    });
+    setError(null);
+    const anchor = document.createElement("a");
+    anchor.href = `/api/execution/receipts/${encodeURIComponent(execution.evaluation.intent.intentId)}?download=1`;
+    anchor.download = `rwa-decision-receipt-${execution.evaluation.intent.intentId}.json`;
+    document.body.append(anchor);
+    anchor.click();
+    anchor.remove();
   }
 
   return (
@@ -278,14 +391,23 @@ export default function App() {
           <p>The finals contract stores both the underwriting credential and its bounded capital intent. Every link below is independently verifiable on Testnet.</p>
           <a className="qualification-link" href={proof.qualification.deploymentUrl} target="_blank" rel="noreferrer">Qualification contract remains available <ExternalLink size={14} /></a>
         </div>
-        <div className="proof-grid">
-          <ProofLink label="Finals deploy" hash={proof.finals.deploymentHash} href={proof.finals.deploymentUrl} />
-          <ProofLink label="Risk credential" hash={proof.finals.credentialWriteHash} href={proof.finals.credentialWriteUrl} />
-          <ProofLink label="Execution intent" hash={proof.finals.intentWriteHash} href={proof.finals.intentWriteUrl} />
-          <ProofFact label="Contract" value={proof.finals.contractHash} />
-          <ProofFact label="Package" value={proof.finals.packageHash} />
-          <ProofFact label="Credential state" value={`record_credential / ${proof.finals.credentialDictionaryKey}`} wide />
-          <ProofFact label="Intent state" value={`record_execution_intent / ${proof.finals.intentDictionaryKey}`} wide />
+        <div className="proof-column">
+          <div className="proof-grid">
+            <ProofLink label="Finals deploy" hash={proof.finals.deploymentHash} href={proof.finals.deploymentUrl} />
+            <ProofLink label="Risk credential" hash={proof.finals.credentialWriteHash} href={proof.finals.credentialWriteUrl} />
+            <ProofLink label="Execution intent" hash={proof.finals.intentWriteHash} href={proof.finals.intentWriteUrl} />
+            <ProofFact label="Contract" value={proof.finals.contractHash} />
+            <ProofFact label="Package" value={proof.finals.packageHash} />
+            <ProofFact label="Credential state" value={`record_credential / ${proof.finals.credentialDictionaryKey}`} wide />
+            <ProofFact label="Intent state" value={`record_execution_intent / ${proof.finals.intentDictionaryKey}`} wide />
+          </div>
+          <button className="verify-state-action" type="button" disabled={verifyingChain} onClick={verifyLiveContractState}>
+            <RefreshCw className={verifyingChain ? "spinning" : ""} size={17} />
+            {verifyingChain ? "Reading Casper contract state…" : "Verify live contract state"}
+          </button>
+          {chainVerification ? <ChainVerificationPanel result={chainVerification} /> : (
+            <p className="verification-hint">One click reads both dictionaries from Casper RPC and compares 13 fields with the published finals evidence.</p>
+          )}
         </div>
       </section>
 
@@ -295,7 +417,7 @@ export default function App() {
         <div className="section-copy sticky-copy">
           <p className="step-label">01 / Underwrite</p>
           <h2>Build the verifiable risk credential</h2>
-          <p>Public evidence references remain off-chain. Their digest, the explainable report, and the credit decision become a Casper-verifiable credential.</p>
+          <p>Evidence remains off-chain. Content hashes, the explainable report, and the credit decision become a Casper-verifiable credential.</p>
           <div className="agent-list">
             <span><FileCheck2 size={16} /> Evidence normalization</span>
             <span><Gauge size={16} /> Explainable risk scoring</span>
@@ -303,7 +425,7 @@ export default function App() {
           </div>
         </div>
         <form className="form-surface" onSubmit={runUnderwriting}>
-          <div className="form-heading"><strong>Financing request</strong><button className="text-button" type="button" onClick={() => setForm(sampleForm)}>Load sample</button></div>
+          <div className="form-heading"><strong>Financing request</strong><button className="text-button" type="button" onClick={loadSample}>Load sample</button></div>
           <div className="form-grid">
             <Field label="Asset name"><input name="assetName" value={form.assetName} onChange={updateField} /></Field>
             <Field label="Asset type"><select name="assetType" value={form.assetType} onChange={updateField}>{(["invoice", "trade_receivable", "real_estate", "commodity", "other"] as AssetType[]).map((item) => <option key={item} value={item}>{item.replaceAll("_", " ")}</option>)}</select></Field>
@@ -313,7 +435,33 @@ export default function App() {
             <Field label="Country"><input name="debtorCountry" value={form.debtorCountry} onChange={updateField} /></Field>
           </div>
           <Field label="Asset description"><textarea name="description" rows={4} value={form.description} onChange={updateField} /></Field>
-          <Field label="Public evidence URLs"><textarea name="publicEvidenceUrls" rows={4} value={form.publicEvidenceUrls} onChange={updateField} /></Field>
+          {form.evidenceBundleId === SAMPLE_EVIDENCE_BUNDLE_ID ? <div className="evidence-package-banner">
+            <FileCheck2 size={20} />
+            <div><strong>Content-hashed synthetic evidence pack</strong><span>4 documents / invoice register, purchase orders, deliveries, and payment history</span></div>
+            <a href="/api/evidence/sample" target="_blank" rel="noreferrer">Inspect JSON <ExternalLink size={14} /></a>
+          </div> : null}
+          <div className="evidence-intake">
+            <div>
+              <FileUp size={20} />
+              <span><strong>Evidence intake</strong><small>JSON, CSV, TXT or PDF / 1 MB each / 6 files maximum</small></span>
+            </div>
+            <label className="upload-action">
+              <FileUp size={16} />
+              {uploadingEvidence ? "Hashing evidence..." : "Add evidence files"}
+              <input
+                type="file"
+                accept=".json,.csv,.txt,.pdf,application/json,text/csv,text/plain,application/pdf"
+                multiple
+                disabled={uploadingEvidence}
+                onChange={ingestEvidence}
+              />
+            </label>
+          </div>
+          {uploadedEvidence ? <div className="uploaded-evidence">
+              <div><BadgeCheck size={18} /><span><strong>{uploadedEvidence.manifest.documentCount} {uploadedEvidence.manifest.documentCount === 1 ? "file" : "files"} hashed server-side</strong><small>Commercial claims remain unverified</small></span><code>{shortHash(uploadedEvidence.manifest.manifestHash)}</code></div>
+            <div>{uploadedEvidence.manifest.documents.map((document) => <span key={document.id}><strong>{document.title}</strong><code>{shortHash(document.sha256)}</code></span>)}</div>
+          </div> : null}
+          <Field label="Public reference URLs (optional)"><textarea name="publicEvidenceUrls" rows={4} value={form.publicEvidenceUrls} onChange={updateField} /></Field>
           <button className="primary-action" type="submit" disabled={loading !== null}><Play size={18} />{loading === "underwrite" ? "Running underwriting agents…" : "Run underwriting agents"}</button>
         </form>
       </section>
@@ -392,7 +540,7 @@ export default function App() {
             <div className="intent-actions">
               {execution.attestation?.explorerUrl ? <a href={execution.attestation.explorerUrl} target="_blank" rel="noreferrer"><ExternalLink size={18} /> View Testnet proof</a> : null}
               <button className="anchor-action" type="button" disabled={Boolean(execution.attestation) || loading !== null} onClick={anchorExecutionIntent}><Link2 size={18} />{execution.attestation ? "Intent anchored" : loading === "anchor" ? "Anchoring…" : "Anchor execution intent"}</button>
-              <button type="button" onClick={downloadAuditBundle}><Download size={18} /> Audit bundle</button>
+              <button type="button" disabled={loading !== null} onClick={downloadDecisionReceipt}><Download size={18} />Decision receipt</button>
             </div>
           </section>
         </section>
@@ -415,15 +563,45 @@ function Stage({ active, current, number, label }: { active: boolean; current: b
 function Metric({ label, value }: { label: string; value: string }) { return <div className="metric"><span>{label}</span><strong>{value}</strong></div>; }
 function ProofLink({ label, hash, href }: { label: string; hash: string; href: string }) { return <a className="proof-item" href={href} target="_blank" rel="noreferrer"><span>{label}</span><code>{shortHash(hash)}</code><ExternalLink size={15} /></a>; }
 function ProofFact({ label, value, wide = false }: { label: string; value: string; wide?: boolean }) { return <div className={`proof-item ${wide ? "wide" : ""}`}><span>{label}</span><code>{shortHash(value)}</code></div>; }
+function ChainVerificationPanel({ result }: { result: ChainVerificationResponse }) {
+  const credentialPassed = result.credential.checks.filter((item) => item.passed).length;
+  const intentPassed = result.executionIntent.checks.filter((item) => item.passed).length;
+  return <div className={`chain-verification ${result.verified ? "verified" : "mismatch"}`}>
+    <div className="verification-title">
+      {result.verified ? <BadgeCheck size={20} /> : <TriangleAlert size={20} />}
+      <div><strong>{result.verified ? "Verified live from contract state" : "Published evidence mismatch"}</strong><span>{new Date(result.verifiedAt).toLocaleString()}</span></div>
+    </div>
+    <div className="verification-counts">
+      <span>Risk credential <strong>{credentialPassed}/{result.credential.checks.length}</strong></span>
+      <span>Execution intent <strong>{intentPassed}/{result.executionIntent.checks.length}</strong></span>
+      <span>Principal ceiling <strong>${result.executionIntent.record.principal_cap_usd.toLocaleString()}</strong></span>
+    </div>
+    <code title={result.credential.stateRootHash}>State root {shortHash(result.credential.stateRootHash)}</code>
+  </div>;
+}
 function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="field"><span>{label}</span>{children}</label>; }
 function LockedState({ label }: { label: string }) { return <div className="locked-state"><Blocks size={28} /><strong>{label}</strong><span>Complete the preceding workflow step to continue.</span></div>; }
 
 function CredentialView({ result }: { result: ReportResponse }) {
   const isLive = result.attestation.network === "casper-testnet";
+  const manifest = result.report.evidenceManifest;
   return <div className="credential-surface">
     <div className="score-block"><span>Risk score</span><strong>{result.report.riskScore}</strong><em>{result.report.decision}</em><small>{result.report.confidence}% confidence</small></div>
     <div className="factor-list">{result.report.factors.map((factor) => <div key={factor.id}><span>{factor.label}</span><div><i style={{ width: `${factor.score}%` }} /></div><strong>{factor.score}</strong></div>)}</div>
     <div className="credential-facts"><Fact label="Asset ID" value={result.report.assetId} /><Fact label="Report hash" value={result.report.reportHash} /><Fact label="Evidence hash" value={result.report.evidenceHash} /><Fact label="Entry point" value={result.registryCall.entryPoint} /><Fact label="Current run" value={isLive ? "Casper Testnet" : "Local deterministic adapter"} /><Fact label="Transaction" value={result.attestation.transactionHash} /></div>
+    {manifest ? <div className="manifest-panel">
+      <div className="manifest-heading"><FileCheck2 size={18} /><div><strong>Evidence manifest verified</strong><span>{manifest.synthetic ? "Synthetic demonstration dataset" : "Submitted evidence"} · {manifest.documentCount} content-hashed {manifest.documentCount === 1 ? "document" : "documents"}</span></div><code title={manifest.manifestHash}>{shortHash(manifest.manifestHash)}</code></div>
+      <div className="manifest-documents">{manifest.documents.map((document) => <div key={document.id}><span>{document.title}</span><code>{shortHash(document.sha256)}</code></div>)}</div>
+    </div> : null}
+    {result.report.provenance ? <div className="agent-runtime-panel">
+      <div><Activity size={18} /><span><strong>Bounded agent runtime</strong><small>{result.report.provenance.workflowVersion} / {result.report.provenance.runtimeMode}</small></span></div>
+      <dl>
+        <dt>Input digest</dt><dd><code>{shortHash(result.report.provenance.inputHash)}</code></dd>
+        <dt>Decision authority</dt><dd>{result.report.provenance.decisionAuthority}</dd>
+        <dt>Evidence authority</dt><dd>{result.report.provenance.evidenceAuthority}</dd>
+        <dt>Private key access</dt><dd>none</dd>
+      </dl>
+    </div> : null}
     <div className={`run-mode ${isLive ? "live" : "mock"}`}><BadgeCheck size={17} /><span>{isLive ? "This run was written to Casper Testnet." : "This local run is reproducible. Published Testnet proof is shown above."}</span></div>
   </div>;
 }
@@ -432,4 +610,27 @@ function Fact({ label, value }: { label: string; value: string }) { return <div>
 function NumberControl({ label, value, prefix = "", suffix = "", step = 1, readOnly = false, onChange }: { label: string; value: number; prefix?: string; suffix?: string; step?: number; readOnly?: boolean; onChange?: (value: number) => void }) { return <label className={`number-control ${readOnly ? "read-only" : ""}`}><span>{label}</span><div>{prefix ? <i>{prefix}</i> : null}<input type="number" step={step} value={value} readOnly={readOnly} aria-readonly={readOnly} onChange={(event) => onChange?.(Number(event.target.value))} />{suffix ? <i>{suffix}</i> : null}</div></label>; }
 function Toggle({ label, checked, danger = false, onChange }: { label: string; checked: boolean; danger?: boolean; onChange: (checked: boolean) => void }) { return <label className={`toggle ${danger ? "danger" : ""}`}><input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} /><span>{label}</span></label>; }
 function shortHash(value: string) { return value.length > 32 ? `${value.slice(0, 14)}…${value.slice(-10)}` : value; }
-function downloadJson(filename: string, payload: unknown) { const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" })); const anchor = document.createElement("a"); anchor.href = url; anchor.download = filename; anchor.click(); URL.revokeObjectURL(url); }
+function supportedMediaType(file: File): "application/json" | "text/csv" | "text/plain" | "application/pdf" {
+  const extension = file.name.toLowerCase().split(".").pop();
+  if (file.type === "application/json" || extension === "json") return "application/json";
+  if (file.type === "text/csv" || extension === "csv") return "text/csv";
+  if (file.type === "application/pdf" || extension === "pdf") return "application/pdf";
+  if (file.type === "text/plain" || extension === "txt") return "text/plain";
+  throw new Error(`${file.name} is not a supported evidence format.`);
+}
+function inferEvidenceType(name: string): EvidenceManifest["documents"][number]["type"] {
+  const value = name.toLowerCase();
+  if (value.includes("invoice")) return "invoice_register";
+  if (value.includes("purchase") || value.includes("order") || value.includes("po-")) return "purchase_order";
+  if (value.includes("delivery") || value.includes("acceptance")) return "delivery_confirmation";
+  if (value.includes("payment") || value.includes("history")) return "payment_history";
+  return "other";
+}
+function bytesToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (let index = 0; index < bytes.length; index += 32_768) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + 32_768));
+  }
+  return btoa(binary);
+}

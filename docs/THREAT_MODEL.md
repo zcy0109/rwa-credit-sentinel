@@ -31,6 +31,9 @@
 | Payload substitution before signing | Anchor endpoint accepts only `intentId`, retrieves the stored intent, and recomputes its canonical hash |
 | Duplicate anchor request | Saved attestations make anchor requests idempotent |
 | Stale or weak evidence | Evidence freshness is a policy check; report/evidence hashes are stored in the credential |
+| Uploaded evidence exhausts API memory | Six-file, 1 MB per-file, and 4 MB bundle limits are enforced before registration |
+| Content hash is mistaken for truth | UI and decision receipt state that hashing proves integrity, not commercial claim validity |
+| Decision receipt is modified | The server hashes the complete generated receipt and includes its `receiptHash` |
 | Unresolved covenant breach | Active breach is a hard blocker with zero authority and zero principal |
 | Soft exception auto-executes | Soft failures route to `reviewer_multisig`, never `policy_key` |
 
@@ -39,6 +42,8 @@
 - The deterministic score is a prototype and is not validated against real loan-loss outcomes.
 - Public URLs do not prove the truth of their source data; production requires trusted provenance
   or oracle infrastructure.
+- User-submitted files are held only in API memory for the current process. The demo stores the
+  manifest, not a durable evidence archive.
 - The in-memory API registry is for demonstration; production requires durable storage and
   concurrency controls.
 - Owner-key authorization is intentionally simple; production requires HSM-backed keys,

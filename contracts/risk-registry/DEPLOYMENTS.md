@@ -7,12 +7,16 @@
 - Block height: `8594853`
 - Contract hash: `e5c63c54f0c147703548976c174087d4a8e087da191adc2f466fa101e1154a3a`
 - Package hash: `aacf4a08413e873bb3f67b2d7ce78230e3d3e2bde558c2203bd55b1a37853345`
-- Risk credential write: `2267d02bb600d20d500a6c670bdda5576ef5ab950db04f63302266538a1159d9`
-- Execution intent write: `e84e316b075fd257f42e91229cdf7762f8089993b01ea64f5e989303360886f6`
-- Credential dictionary key: `dictionary-11983ddea2cdd494ee8d074580ff8fec97e7a95b122380ecb44a6dc72f52e860`
-- Execution dictionary key: `dictionary-38a776d306dab1d720019cc91f9734e0a71570e0160affb5a567f50b621f9f96`
-- Published intent: `intent-09f5ecde`
-- Published intent hash: `a22b8596a3648937b165985d94c045a7660e9b1f1bee8fdac414407987e71a6e`
+- Risk credential write: `b52e4471e09e34a25a5b059bf19ba47764772d46f2c4b328ec6cf57784e0f2ec`
+- Execution intent write: `78e23db0c0d8aa1f4077c9983fa8b6e394730c21bb6773458c544299456fa3e7`
+- Credential dictionary key: `dictionary-c8aa1ed7710b32d36e4af3a54101716cdc9d03932f3ee13b988bcf4da656d21b`
+- Execution dictionary key: `dictionary-ee8964520c7812b6cd1e5b5d6f6098b42a0f4f59b3f578929a4de054d7b2928d`
+- Published asset: `invoice:acme-export-invoice-pool-finals`
+- Published intent: `intent-b781ee81`
+- Published report hash: `13ae257c3ebc1b7390992c06fce80e80a48d108205b72ee8a462481c2c574626`
+- Published evidence hash: `4ea1bedb46c13cb700c8f33a4f958da6bb91bb34243a6df50bfa88cb90ef8394`
+- Evidence manifest hash: `06e0a311d67f64e116fc2f0f134bbfa9b438e8f0e7c733d636080ff8a2a3420d`
+- Published intent hash: `7485dc82989896680b6f6353c170ab9e4327541973c3dabca0118c57d560aa0b`
 
 Finals v2 entry points:
 

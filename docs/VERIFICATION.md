@@ -47,7 +47,7 @@ GitHub CI and CodeQL workflows are in `.github/workflows`.
 
 ```bash
 npm run casper:read:registry
-npm run casper:read:execution -- --intent-id=intent-09f5ecde
+npm run casper:read:execution -- --intent-id=intent-b781ee81
 ```
 
 These commands query Testnet state without a private key. Expected identifiers:
@@ -57,13 +57,13 @@ Contract:
 e5c63c54f0c147703548976c174087d4a8e087da191adc2f466fa101e1154a3a
 
 Asset:
-invoice:demo-acme-batch
+invoice:acme-export-invoice-pool-finals
 
 Intent:
-intent-09f5ecde
+intent-b781ee81
 
 Intent hash:
-a22b8596a3648937b165985d94c045a7660e9b1f1bee8fdac414407987e71a6e
+7485dc82989896680b6f6353c170ab9e4327541973c3dabca0118c57d560aa0b
 ```
 
 ## Live-Write Safety

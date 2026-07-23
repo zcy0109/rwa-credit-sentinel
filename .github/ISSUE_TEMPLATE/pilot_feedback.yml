@@ -1,0 +1,54 @@
+name: Pilot feedback
+description: Reproducible feedback from an RWA, risk, or integration review
+title: "[Pilot] "
+labels:
+  - pilot-feedback
+body:
+  - type: dropdown
+    id: role
+    attributes:
+      label: Reviewer role
+      options:
+        - RWA originator
+        - Credit or treasury reviewer
+        - DeFi or Casper developer
+        - Security reviewer
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: paths
+    attributes:
+      label: Paths tested
+      options:
+        - label: Evidence intake and server-side hashing
+        - label: Underwriting credential
+        - label: Approve, review, and block policy paths
+        - label: Decision receipt
+        - label: Casper Testnet readback
+  - type: textarea
+    id: friction
+    attributes:
+      label: Main friction
+      description: What would prevent a shadow-mode integration?
+    validations:
+      required: true
+  - type: textarea
+    id: missing
+    attributes:
+      label: Missing evidence or control
+      description: Name the most important missing field, policy check, or audit detail.
+    validations:
+      required: true
+  - type: textarea
+    id: privacy
+    attributes:
+      label: Privacy or security concern
+      description: Do not attach private documents, credentials, or personal data.
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Consent
+      options:
+        - label: I consent to this feedback being public in the repository.
+          required: true
