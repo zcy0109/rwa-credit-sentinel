@@ -162,7 +162,7 @@ export async function buildRiskReport(
     agentTrace,
     provenance: {
       schemaVersion: "rwa-agent-provenance/v1" as const,
-      workflowVersion: "finals-v2" as const,
+      workflowVersion: "finals-v3" as const,
       runtimeMode: "bounded-deterministic" as const,
       inputHash,
       evidenceAuthority: "content-integrity-only" as const,

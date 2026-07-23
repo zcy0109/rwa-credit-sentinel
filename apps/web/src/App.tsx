@@ -361,7 +361,7 @@ export default function App() {
       <header className="app-header">
         <div className="brand-row">
           <div className="brand-mark"><ShieldCheck size={24} /></div>
-          <div><strong>RWA Credit Sentinel</strong><span>Finals v2</span></div>
+          <div><strong>RWA Credit Sentinel</strong><span>Finals v3</span></div>
         </div>
         <nav aria-label="Workflow progress">
           <Stage active={stage >= 1} current={stage === 1} number="01" label="Underwrite" />

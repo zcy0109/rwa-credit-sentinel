@@ -71,8 +71,10 @@ function checkContractSource() {
   ]) {
     assert(source.includes(token), `Contract source does not include ${token}`);
   }
+  assert(!source.includes("wee_alloc"), "Contract must not use the unmaintained wee_alloc allocator");
+  assert(source.includes("dlmalloc::GlobalDlmalloc"), "Contract must use the maintained dlmalloc allocator");
 
-  return "Finals contract contains credential and execution-intent write/read entry points.";
+  return "Finals contract contains both state paths and uses the maintained dlmalloc allocator.";
 }
 
 function checkFrontendBundle() {
@@ -90,15 +92,15 @@ function checkFrontendBundle() {
   assert(bundleText.includes("Add evidence files"), "frontend bundle is missing evidence intake");
   assert(bundleText.includes("Decision receipt"), "frontend bundle is missing decision receipt export");
   assert(
-    bundleText.includes("694147496b0af6dfe83bf0a32cecd16ae6e09b8a141087f6cc0bcffea0f252c0"),
+    bundleText.includes("3a305efe3c72339e00655a0eace4d5f0ba11514717241204fab6029a458e591c"),
     "frontend bundle is missing the finals contract deployment hash"
   );
   assert(
-    bundleText.includes("b52e4471e09e34a25a5b059bf19ba47764772d46f2c4b328ec6cf57784e0f2ec"),
+    bundleText.includes("da9174726c74f11ae54e47368f933b3e0effc48e1ac376ff0f34a77d632cebd6"),
     "frontend bundle is missing the finals credential write hash"
   );
   assert(
-    bundleText.includes("78e23db0c0d8aa1f4077c9983fa8b6e394730c21bb6773458c544299456fa3e7"),
+    bundleText.includes("68175104219126eee20876aa7446301888338838bb1430bd1ce01c5ebbe2542a"),
     "frontend bundle is missing the execution-intent write hash"
   );
 

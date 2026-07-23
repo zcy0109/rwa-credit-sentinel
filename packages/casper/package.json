@@ -10,6 +10,7 @@
     "test": "vitest run",
     "preflight:real": "tsx scripts/preflight.ts",
     "deploy:registry": "tsx scripts/deployRegistry.ts",
+    "anchor:credential": "tsx scripts/anchorFinalsCredential.ts",
     "read:registry": "tsx scripts/readRegistry.ts",
     "anchor:execution": "tsx scripts/anchorExecutionIntent.ts",
     "read:execution": "tsx scripts/readExecutionIntent.ts",

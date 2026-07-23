@@ -21,7 +21,7 @@ describe("buildRiskReport", () => {
     expect(report.agentTrace).toHaveLength(4);
     expect(report.agentTrace.every((step) => step.tool.length > 0)).toBe(true);
     expect(report.provenance).toMatchObject({
-      workflowVersion: "finals-v2",
+      workflowVersion: "finals-v3",
       runtimeMode: "bounded-deterministic",
       evidenceAuthority: "content-integrity-only",
       decisionAuthority: "server-policy",

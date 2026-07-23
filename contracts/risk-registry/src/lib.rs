@@ -15,13 +15,13 @@ use casper_types::{
 };
 
 #[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+static ALLOC: dlmalloc::GlobalDlmalloc = dlmalloc::GlobalDlmalloc;
 
 const OWNER_KEY: &str = "owner";
 const RECORDS_DICT: &str = "records";
 const EXECUTION_INTENTS_DICT: &str = "execution_intents";
-const RECORDS_SEED_KEY: &str = "rwa_finals_v2_records_seed";
-const EXECUTION_INTENTS_SEED_KEY: &str = "rwa_finals_v2_execution_intents_seed";
+const RECORDS_SEED_KEY: &str = "rwa_finals_v3_records_seed";
+const EXECUTION_INTENTS_SEED_KEY: &str = "rwa_finals_v3_execution_intents_seed";
 const CONTRACT_HASH_KEY: &str = "risk_registry_contract_hash";
 const CONTRACT_PACKAGE_HASH_KEY: &str = "risk_registry_package_hash";
 const CONTRACT_ACCESS_KEY: &str = "risk_registry_access_uref";
@@ -55,8 +55,8 @@ impl From<RegistryError> for ApiError {
 #[no_mangle]
 pub extern "C" fn call() {
     let (package_hash, access_uref) = storage::create_contract_package_at_hash();
-    // Seed names live in the installing account context and must not collide with
-    // the qualification contract's dictionary seeds. Contract-facing names remain stable.
+    // Seed names live in the installing account context and must be unique across
+    // contract reinstallations. Contract-facing dictionary names remain stable.
     let records_uref = storage::new_dictionary(RECORDS_SEED_KEY).unwrap_or_revert();
     let execution_intents_uref =
         storage::new_dictionary(EXECUTION_INTENTS_SEED_KEY).unwrap_or_revert();

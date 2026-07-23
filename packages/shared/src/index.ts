@@ -33,7 +33,7 @@ export type AgentStep = {
 
 export type AgentProvenance = {
   schemaVersion: "rwa-agent-provenance/v1";
-  workflowVersion: "finals-v2";
+  workflowVersion: "finals-v3";
   runtimeMode: "bounded-deterministic";
   inputHash: string;
   evidenceAuthority: "content-integrity-only";

@@ -20,6 +20,7 @@
     "casper:preflight": "npm --workspace packages/casper run preflight:real",
     "casper:smoke:real": "npm --workspace packages/casper run smoke:real",
     "casper:deploy:registry": "npm --workspace packages/casper run deploy:registry",
+    "casper:anchor:credential": "npm --workspace packages/casper run anchor:credential",
     "casper:read:registry": "npm --workspace packages/casper run read:registry",
     "casper:anchor:execution": "npm --workspace packages/casper run anchor:execution",
     "casper:read:execution": "npm --workspace packages/casper run read:execution --",

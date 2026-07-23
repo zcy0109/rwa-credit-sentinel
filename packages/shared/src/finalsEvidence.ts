@@ -1,15 +1,15 @@
 export const finalsEvidence = {
   rpcUrl: "https://node.testnet.casper.network/rpc",
   explorerTransactionBaseUrl: "https://testnet.cspr.live/transaction",
-  deploymentHash: "694147496b0af6dfe83bf0a32cecd16ae6e09b8a141087f6cc0bcffea0f252c0",
-  credentialWriteHash: "b52e4471e09e34a25a5b059bf19ba47764772d46f2c4b328ec6cf57784e0f2ec",
-  intentWriteHash: "78e23db0c0d8aa1f4077c9983fa8b6e394730c21bb6773458c544299456fa3e7",
-  contractHash: "e5c63c54f0c147703548976c174087d4a8e087da191adc2f466fa101e1154a3a",
-  packageHash: "aacf4a08413e873bb3f67b2d7ce78230e3d3e2bde558c2203bd55b1a37853345",
+  deploymentHash: "3a305efe3c72339e00655a0eace4d5f0ba11514717241204fab6029a458e591c",
+  credentialWriteHash: "da9174726c74f11ae54e47368f933b3e0effc48e1ac376ff0f34a77d632cebd6",
+  intentWriteHash: "68175104219126eee20876aa7446301888338838bb1430bd1ce01c5ebbe2542a",
+  contractHash: "6a248275de2c4518a9adb4996d62183e0a10899cd0b9080274cf72504ed9cd4f",
+  packageHash: "2c34005155776d58709aa092eadb967b60d024a99e2073e131ec500a7e98358f",
   credentialDictionaryKey:
-    "dictionary-c8aa1ed7710b32d36e4af3a54101716cdc9d03932f3ee13b988bcf4da656d21b",
+    "dictionary-0d1ae99a898ca2cbcee6372256ed77868577ec045e5071998ffb0caa7fc2ad52",
   intentDictionaryKey:
-    "dictionary-ee8964520c7812b6cd1e5b5d6f6098b42a0f4f59b3f578929a4de054d7b2928d",
+    "dictionary-eb1679fc5cd63e7b8f27d74990415252d74d36f58ba26ecbb26426d3ea7816db",
   assetId: "invoice:acme-export-invoice-pool-finals",
   intentId: "intent-b781ee81",
   reportHash: "13ae257c3ebc1b7390992c06fce80e80a48d108205b72ee8a462481c2c574626",

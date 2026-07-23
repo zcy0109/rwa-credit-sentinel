@@ -17,12 +17,12 @@ The finals contract exposes two application-level state transitions:
 
 | Evidence | Casper Testnet proof |
 | --- | --- |
-| Contract deploy | [`694147...52c0`](https://testnet.cspr.live/transaction/694147496b0af6dfe83bf0a32cecd16ae6e09b8a141087f6cc0bcffea0f252c0) |
-| Risk credential write | [`b52e44...f2ec`](https://testnet.cspr.live/transaction/b52e4471e09e34a25a5b059bf19ba47764772d46f2c4b328ec6cf57784e0f2ec) |
-| Execution intent write | [`78e23d...a3e7`](https://testnet.cspr.live/transaction/78e23db0c0d8aa1f4077c9983fa8b6e394730c21bb6773458c544299456fa3e7) |
+| Contract deploy | [`3a305e...591c`](https://testnet.cspr.live/transaction/3a305efe3c72339e00655a0eace4d5f0ba11514717241204fab6029a458e591c) |
+| Risk credential write | [`da9174...ebd6`](https://testnet.cspr.live/transaction/da9174726c74f11ae54e47368f933b3e0effc48e1ac376ff0f34a77d632cebd6) |
+| Execution intent write | [`681751...542a`](https://testnet.cspr.live/transaction/68175104219126eee20876aa7446301888338838bb1430bd1ce01c5ebbe2542a) |
 
-- Contract hash: `e5c63c54f0c147703548976c174087d4a8e087da191adc2f466fa101e1154a3a`
-- Package hash: `aacf4a08413e873bb3f67b2d7ce78230e3d3e2bde558c2203bd55b1a37853345`
+- Contract hash: `6a248275de2c4518a9adb4996d62183e0a10899cd0b9080274cf72504ed9cd4f`
+- Package hash: `2c34005155776d58709aa092eadb967b60d024a99e2073e131ec500a7e98358f`
 - Published asset: `invoice:acme-export-invoice-pool-finals`
 - Published intent: `intent-b781ee81`
 - Evidence manifest hash: `06e0a311d67f64e116fc2f0f134bbfa9b438e8f0e7c733d636080ff8a2a3420d`
@@ -41,7 +41,7 @@ verification, not a screenshot or a cached transaction claim.
 
 ## Qualification Prototype vs Finals Product
 
-| Capability | Qualification prototype | Finals v2 |
+| Capability | Qualification prototype | Finals v3 |
 | --- | --- | --- |
 | Agent workflow | Four underwriting agents | Eight underwriting and bounded-execution agents |
 | Casper evidence | Risk credential write | Risk credential and execution-intent state |

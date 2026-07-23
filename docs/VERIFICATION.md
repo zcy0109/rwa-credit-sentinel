@@ -54,7 +54,7 @@ These commands query Testnet state without a private key. Expected identifiers:
 
 ```text
 Contract:
-e5c63c54f0c147703548976c174087d4a8e087da191adc2f466fa101e1154a3a
+6a248275de2c4518a9adb4996d62183e0a10899cd0b9080274cf72504ed9cd4f
 
 Asset:
 invoice:acme-export-invoice-pool-finals

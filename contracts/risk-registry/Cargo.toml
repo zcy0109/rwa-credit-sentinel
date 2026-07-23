@@ -9,7 +9,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 casper-contract = { version = "5.1.1", default-features = false }
 casper-types = "6.1.0"
-wee_alloc = "0.4.5"
+dlmalloc = { version = "0.2.14", features = ["global"] }
 
 [profile.release]
 codegen-units = 1

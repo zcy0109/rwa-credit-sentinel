@@ -75,30 +75,31 @@ npm run casper:deploy:registry
 ```
 
 The finals prototype deployed this contract and called both write entry points from TypeScript
-through `casper-js-sdk`.
+through `casper-js-sdk`. The deployable build uses `dlmalloc`; the unmaintained `wee_alloc`
+dependency is not present in the contract or lockfile.
 
 Deployment:
 
 ```text
-https://testnet.cspr.live/transaction/694147496b0af6dfe83bf0a32cecd16ae6e09b8a141087f6cc0bcffea0f252c0
+https://testnet.cspr.live/transaction/3a305efe3c72339e00655a0eace4d5f0ba11514717241204fab6029a458e591c
 ```
 
 Registry write:
 
 ```text
-https://testnet.cspr.live/transaction/b52e4471e09e34a25a5b059bf19ba47764772d46f2c4b328ec6cf57784e0f2ec
+https://testnet.cspr.live/transaction/da9174726c74f11ae54e47368f933b3e0effc48e1ac376ff0f34a77d632cebd6
 ```
 
 Execution intent write:
 
 ```text
-https://testnet.cspr.live/transaction/78e23db0c0d8aa1f4077c9983fa8b6e394730c21bb6773458c544299456fa3e7
+https://testnet.cspr.live/transaction/68175104219126eee20876aa7446301888338838bb1430bd1ce01c5ebbe2542a
 ```
 
 Contract hash:
 
 ```text
-e5c63c54f0c147703548976c174087d4a8e087da191adc2f466fa101e1154a3a
+6a248275de2c4518a9adb4996d62183e0a10899cd0b9080274cf72504ed9cd4f
 ```
 
 ## Integration Checklist

@@ -25,7 +25,7 @@ agentic finance.
 
 ## Material Upgrades
 
-| Area | Qualification | Finals v2 |
+| Area | Qualification | Finals v3 |
 | --- | --- | --- |
 | Workflow | Four underwriting agents | Eight agents across underwriting and execution |
 | Contract state | One credential dictionary | Credential and execution-intent dictionaries |
