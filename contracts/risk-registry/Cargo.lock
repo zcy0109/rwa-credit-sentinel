@@ -70,7 +70,7 @@ version = "5.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9fd15d0e835459cdcc2f5629253ffcf92824a79c3ae62a36c563d4e1ec315318"
 dependencies = [
- "casper-types",
+ "casper-types 6.1.0",
  "hex_fmt",
 ]
 
@@ -79,6 +79,36 @@ name = "casper-types"
 version = "6.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f9e04cda524136cc94ca5d8a1eff0b33de4eb98914344c736abda370321e7e87"
+dependencies = [
+ "base16",
+ "base64",
+ "bitflags",
+ "blake2",
+ "derive_more",
+ "ed25519-dalek",
+ "hex",
+ "hex_fmt",
+ "itertools",
+ "k256",
+ "num",
+ "num-derive",
+ "num-integer",
+ "num-rational",
+ "num-traits",
+ "rand",
+ "serde",
+ "serde-map-to-array",
+ "serde_bytes",
+ "serde_json",
+ "tracing",
+ "uint",
+]
+
+[[package]]
+name = "casper-types"
+version = "7.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3064813bbff188f71c2c726dc1e2bcf5c9a30acd323f8d63adcbb1833af116f9"
 dependencies = [
  "base16",
  "base64",
@@ -574,7 +604,7 @@ name = "rwa-risk-registry"
 version = "0.1.0"
 dependencies = [
  "casper-contract",
- "casper-types",
+ "casper-types 7.0.0",
  "dlmalloc",
 ]
 
