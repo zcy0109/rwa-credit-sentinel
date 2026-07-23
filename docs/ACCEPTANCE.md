@@ -1,40 +1,41 @@
-# Acceptance Checklist
+# Finals Acceptance Checklist
 
-## Qualification Required
+## Repository
 
-- [x] Working prototype exists and can be run locally.
-- [x] Casper Testnet integration produces a real transaction or contract call.
-- [x] GitHub-ready source is open-source friendly.
-- [x] GitHub repository is published.
-- [x] README includes setup, architecture, and usage instructions.
-- [x] Demo video script explains the full walkthrough.
+- [x] Public repository with project-appropriate name.
+- [x] Complete README, setup, architecture, test path, scope, and security notes.
+- [x] GitHub Actions CI and CodeQL workflows.
+- [x] Dependabot configuration and community health files.
+- [x] Required Casper and buildathon topics documented.
+- [x] No known high or critical npm audit findings.
+
+## Casper MVP
+
+- [x] Finals contract deployed on Casper Testnet.
+- [x] `record_credential` successfully written and publicly read back.
+- [x] `record_execution_intent` successfully written and publicly read back.
+- [x] Contract hash, package hash, transaction examples, and dictionary keys documented.
+- [x] Browser and agent loop do not receive private keys.
 
 ## Product Flow
 
-- [x] User can submit an invoice/RWA financing request.
-- [x] System generates a structured report with a risk score.
-- [x] System produces report and evidence hashes.
-- [x] System anchors the risk credential on Casper.
-- [x] System shows a DeFi lending gate decision.
-- [x] System stores and exposes recent credentials through an API registry.
+- [x] Invoice-backed financing request with public evidence references.
+- [x] Explainable risk credential with report and evidence hashes.
+- [x] Nine deterministic execution-policy checks.
+- [x] Server-locked policy ignores caller-supplied threshold overrides.
+- [x] Approve, review, and block decisions with explicit authorization.
+- [x] Risk-adjusted principal cap.
+- [x] Idempotent server-side intent anchoring.
+- [x] Downloadable end-to-end audit bundle.
+- [x] 30-case benchmark covering every policy failure mode.
 
-## Quality Bar
+## Judge Experience
 
-- [x] Code is organized by web, api, and chain modules.
-- [x] Main happy path has automated or scripted verification.
-- [x] UI is clear enough for a judge to understand in under 3 minutes.
-- [x] Limitations are honest and do not overclaim real-world financial safety.
-
-## Final-Round Readiness
-
-- [x] Multi-agent roles are visible in the product.
-- [x] Casper contract registry path is designed, deployed, and called on Testnet.
-- [x] Casper contribution is more than a cosmetic transfer in deployed testnet form.
-- [x] RWA/DeFi use case is credible and concrete.
-- [x] Roadmap explains how this could become a real Casper ecosystem tool.
-- [x] Credential registry makes the DeFi integration story queryable.
-
-## Submission Remaining
-
-- [ ] Demo video is recorded and uploaded.
-- [ ] DoraHacks submission form is filled.
+- [x] Default mock mode is safe and repeatable.
+- [x] Five-minute test path is documented.
+- [x] Real Testnet evidence is visible in the UI.
+- [x] Public readback commands require no private key.
+- [x] Limitations avoid claims of production financial safety.
+- [ ] Updated finals demo video is recorded and uploaded.
+- [ ] Finals DoraHacks BUIDL page is updated with package hash and described transactions.
+- [ ] Final submission is reviewed after the production video link is added.

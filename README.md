@@ -1,24 +1,38 @@
 # RWA Credit Sentinel
 
-Agentic RWA credit-risk assessment with a real Casper Testnet credential registry.
+RWA Credit Sentinel is a bounded autonomous underwriting and capital-action system for
+invoice-backed financing. It turns public evidence into an explainable risk credential, verifies
+that credential against policy, caps executable principal, and anchors both the credential and the
+resulting execution intent on Casper Testnet.
 
-Built for **Casper Agentic Buildathon 2026**.
+Built for the **Casper Agentic Buildathon 2026 Finals**.
 
 [![CI](https://github.com/zcy0109/rwa-credit-sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/zcy0109/rwa-credit-sentinel/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/zcy0109/rwa-credit-sentinel/actions/workflows/codeql.yml/badge.svg)](https://github.com/zcy0109/rwa-credit-sentinel/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-## Submission Snapshot
+## Finals Evidence
 
-- GitHub: https://github.com/zcy0109/rwa-credit-sentinel
-- Recommended repository topics: `casper-blockchain`, `casper-network`, `buildathon`, `rwa`, `defi`, `web3`, `agentic-ai`
-- Deployed Casper Testnet contract: `aeda10dacdee9cefa8b857c3f6c8a0b2edeb6c19421f16189016ab1a2359b391`
-- Contract package: `2765865230aba876704f1b793b2a124adcdf532336c9b455de692ea885637df3`
-- Contract deployment: https://testnet.cspr.live/transaction/735dab5995084abfe4494398ff6f3c6677055a4d5025b79918ae9c4a202a93b9
-- Real credential write: https://testnet.cspr.live/transaction/096907b2961fe30d01d0267a2876922225d2b43e37f124a40608330e500341f0
-- Entry point used: `record_credential`
-- Readback command: `npm run casper:read:registry`
-- Verification command: `npm run verify`
+The finals contract exposes two application-level state transitions:
+
+| Evidence | Casper Testnet proof |
+| --- | --- |
+| Contract deploy | [`694147...52c0`](https://testnet.cspr.live/transaction/694147496b0af6dfe83bf0a32cecd16ae6e09b8a141087f6cc0bcffea0f252c0) |
+| Risk credential write | [`2267d0...59d9`](https://testnet.cspr.live/transaction/2267d02bb600d20d500a6c670bdda5576ef5ab950db04f63302266538a1159d9) |
+| Execution intent write | [`e84e31...86f6`](https://testnet.cspr.live/transaction/e84e316b075fd257f42e91229cdf7762f8089993b01ea64f5e989303360886f6) |
+
+- Contract hash: `e5c63c54f0c147703548976c174087d4a8e087da191adc2f466fa101e1154a3a`
+- Package hash: `aacf4a08413e873bb3f67b2d7ce78230e3d3e2bde558c2203bd55b1a37853345`
+- Published asset: `invoice:demo-acme-batch`
+- Published intent: `intent-09f5ecde`
+- Intent hash: `a22b8596a3648937b165985d94c045a7660e9b1f1bee8fdac414407987e71a6e`
+- Decision: `Approve`
+- Authorization: `policy_key`
+- Principal cap: `$125,000`
+- Policy result: `9/9` checks passed
+
+The original qualification contract remains verifiable in
+[`contracts/risk-registry/DEPLOYMENTS.md`](contracts/risk-registry/DEPLOYMENTS.md).
 
 ## Judge Quickstart
 
@@ -28,140 +42,161 @@ npm run verify
 npm run dev
 ```
 
-Open:
+Open `http://127.0.0.1:5173`.
+
+The local app defaults to deterministic mock adapters, so the complete workflow can be reviewed
+without a wallet, private key, or Testnet CSPR. Published Testnet evidence is displayed separately
+and is never presented as the current local run.
+
+### Five-minute test path
+
+1. Select **Load sample**, then **Run underwriting agents**.
+2. Review the score, risk factors, report hash, evidence hash, and credential mode.
+3. Keep **Autonomous** mode and the default vault policy.
+4. Select **Evaluate capital action** and inspect all nine policy checks.
+5. Select **Anchor execution intent**. In local mode this creates a deterministic mock proof.
+6. Download the audit bundle.
+7. Uncheck **Credential verified** and evaluate again to see capital allocation blocked.
+8. Restore the credential, set collateral below `1.15x`, and evaluate again to see reviewer routing.
+
+## Why Casper Is Required
+
+An off-chain score alone can be changed, selectively disclosed, or detached from the decision that
+consumed it. This system creates a verifiable chain:
 
 ```text
-http://127.0.0.1:5173
+public evidence references
+  -> explainable risk report
+  -> Casper risk credential
+  -> deterministic vault policy
+  -> bounded execution intent
+  -> Casper execution-intent state
 ```
 
-The app runs in mock mode by default so judges can review it without secrets or Testnet CSPR. The repository and UI include real Casper Testnet evidence from the deployed contract and a verified registry write.
+The credential binds the score and evidence digest to an issuer. The execution intent then binds
+the resulting decision, authorization path, and principal ceiling back to the credential's report
+hash. A lender can independently query both contract dictionaries.
 
-## Repository Quality
+## Agent Workflow
 
-This repository includes:
+The system is intentionally not a chatbot or an LLM wrapper.
 
-- GitHub Actions CI for linting, tests, builds, and the submission verification script.
-- CodeQL analysis for JavaScript and TypeScript.
-- Dependabot configuration for npm and GitHub Actions updates.
-- Security reporting guidance in `SECURITY.md`.
-- Contributor guidance, issue templates, a pull request template, a code of conduct, and an MIT license.
+1. **Data Agent** normalizes the financing request and public evidence references.
+2. **Risk Agent** produces explainable factor scores and a credit-risk result.
+3. **Verification Agent** creates canonical report and evidence hashes.
+4. **Decision Agent** issues the underwriting credential.
+5. **Credential Agent** verifies that credential before it can be consumed.
+6. **Policy Agent** evaluates nine hard and soft vault boundaries.
+7. **Capital Agent** computes a risk-adjusted principal cap.
+8. **Execution Agent** assigns `policy_key`, `reviewer_multisig`, or `none` authority and anchors
+   the intent.
 
-## Thesis
+Autonomy is bounded by explicit policy. Hard failures block capital; soft exceptions route to
+human review; only a fully verified request above the autonomous score threshold receives
+policy-key authorization.
 
-RWA lending needs trustworthy off-chain risk signals. RWA Credit Sentinel turns an agentic risk assessment into a verifiable Casper credential: the agents evaluate an invoice or asset-backed financing request, generate a structured risk report, hash the report and public evidence, and write the credential to a Casper Testnet registry contract. A DeFi lending gate can then make an auditable eligibility decision from the credential.
+## Safety Boundaries
 
-## What It Does
+The execution policy checks:
 
-1. A user submits an RWA financing request.
-2. The API runs a deterministic multi-agent risk workflow:
-   - Data Agent
-   - Risk Agent
-   - Verification Agent
-   - Decision Agent
-3. The system generates a risk score, decision, report hash, and evidence hash.
-4. The Casper adapter anchors the credential:
-   - `mock` mode for safe repeatable judging.
-   - `contract-registry` mode for a real Casper Testnet `record_credential` call.
-   - `native-transfer-memo` remains available as a fallback historical proof path.
-5. The frontend displays the risk report, agent trace, Casper credential, registry call arguments, DeFi gate result, and recent local credential registry.
+- Casper credential verification
+- Exact report-hash match
+- Covenant status
+- Minimum risk score
+- Minimum collateral ratio
+- Maximum advance rate
+- Minimum liquidity buffer
+- Evidence freshness
+- Single-asset exposure
 
-## Architecture
+The repository includes a deterministic 30-case benchmark covering all nine failure modes. It
+reports decision agreement, decision distribution, and invalid-credential block rate.
 
-- `apps/web` - Vite React demo UI.
-- `apps/api` - Express API, RWA intake validation, risk-agent workflow, local credential registry.
-- `packages/shared` - shared domain types and DeFi gate logic.
-- `packages/casper` - Casper mock adapter, native-transfer fallback, registry contract-call adapter, preflight, deploy, and smoke scripts.
-- `contracts/risk-registry` - native Casper Rust contract that stores the latest risk credential per asset ID.
-- `docs` - Casper integration notes, submission copy, demo script, verification notes, and acceptance checklist.
+## Contract
 
-## Casper Contract
-
-The deployed registry contract supports:
+Entry points:
 
 - `record_credential(asset_id, risk_score, decision, report_hash, evidence_hash, created_at_ms)`
 - `get_credential(asset_id)`
+- `record_execution_intent(intent_id, asset_id, report_hash, decision, authorization, principal_cap_usd, intent_hash, created_at_ms)`
+- `get_execution_intent(intent_id)`
 - `owner()`
 
-Stored credential fields:
-
-- Asset ID
-- Risk score
-- Decision
-- Report hash
-- Evidence hash
-- Issuer account
-- Created timestamp
-
-The verified buildathon smoke run wrote this credential to the deployed contract:
-
-```text
-asset_id: invoice:demo-acme-batch
-risk_score: 78
-decision: Eligible
-entry_point: record_credential
-transaction: 096907b2961fe30d01d0267a2876922225d2b43e37f124a40608330e500341f0
-```
-
-The registry can be read back from Casper RPC without a private key:
+Read the two published records without a private key:
 
 ```bash
 npm run casper:read:registry
+npm run casper:read:execution -- --intent-id=intent-09f5ecde
 ```
 
-Expected readback includes:
+## API
 
-```text
-asset_id: invoice:demo-acme-batch
-risk_score: 78
-decision: Eligible
-dictionary_key: dictionary-f14bf47bde84eeda7dda934bdac75fc0a6d043027e27cf31b2cf6f8dcd17be45
-```
-
-## API Surface
-
-- `GET /health`
 - `POST /api/reports`
 - `GET /api/credentials`
 - `GET /api/credentials/:assetId`
+- `POST /api/execution/evaluate`
+- `POST /api/execution/anchor`
+- `GET /api/execution/intents`
+- `GET /api/execution/intents/:intentId`
+- `GET /api/execution/benchmark`
 
-Each `POST /api/reports` response includes:
+The browser submits only an `intentId` to the anchor endpoint. The server retrieves the previously
+evaluated canonical intent and signs it outside the browser. Repeated anchor requests are
+idempotent.
 
-- `report`: structured agentic risk report.
-- `attestation`: Casper credential evidence.
-- `registryCall`: exact contract entry point and arguments.
+## Repository Layout
+
+- `apps/web` - React decision desk and audit workflow.
+- `apps/api` - intake validation, underwriting orchestration, policy API, and server-side anchoring.
+- `packages/shared` - domain model, bounded execution engine, and benchmark.
+- `packages/casper` - mock/real adapters, deployment, smoke, anchor, and RPC readback scripts.
+- `contracts/risk-registry` - native Rust/Wasm Casper registry.
+- `docs` - verification, submission, demo, threat model, and launch plan.
 
 ## Verification
 
 ```bash
-npm test
-npm run build
-npm --workspace packages/casper run smoke:mock
 npm run verify
+npm audit --registry=https://registry.npmjs.org --audit-level=high
 ```
 
-Real Casper Testnet checks, when a funded wallet key is available:
+`npm run verify` builds every workspace, runs all tests, checks both contract state paths, checks
+the production bundle for the published finals evidence, and exercises the full API flow in mock
+mode.
+
+Real-mode commands require a funded Testnet key:
 
 ```bash
 npm run casper:preflight
 npm run casper:smoke:real
+npm run casper:anchor:execution
 npm run casper:read:registry
+npm run casper:read:execution -- --intent-id=intent-09f5ecde
 ```
-
-## Casper Testnet Mode
-
-Copy `.env.example` to `.env` and set:
-
-```bash
-CASPER_MODE=real
-CASPER_PRIVATE_KEY_PEM_FILE=.secrets/Account_1_secret_key.pem
-CASPER_KEY_ALGORITHM=SECP256K1
-CASPER_RISK_REGISTRY_HASH=aeda10dacdee9cefa8b857c3f6c8a0b2edeb6c19421f16189016ab1a2359b391
-```
-
-Use `CASPER_KEY_ALGORITHM=SECP256K1` for public keys starting with `02`, and `ED25519` for public keys starting with `01`.
 
 Private keys, seed phrases, `.env`, and `.secrets/` must never be committed.
 
-## Safety
+## Scope
 
-This prototype does not provide investment advice, custody assets, execute trades, or process private KYC documents. It demonstrates an auditable RWA risk credential workflow for buildathon evaluation.
+This prototype does not provide investment advice, custody assets, execute trades, ingest private
+KYC documents, or transfer principal. It proves the underwriting-to-authorized-intent boundary.
+A production deployment would add regulated identity, oracle-backed evidence, multi-issuer
+governance, key management, and a separately audited settlement contract.
+
+## Launch Plan
+
+The product has a gated 30/90/180-day path from public Testnet pilot to a controlled design-partner
+trial and, only after legal and security approval, an audited limited launch. The plan includes
+measurable exit criteria, shadow-mode testing, policy versioning, multisig review, evidence
+provenance, and a reusable Casper integration SDK.
+
+See [docs/LAUNCH_PLAN.md](docs/LAUNCH_PLAN.md) and
+[docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
+
+## Security and Community
+
+The repository includes CI, CodeQL, Dependabot, issue templates, a pull request template,
+`SECURITY.md`, `CONTRIBUTING.md`, a code of conduct, and an MIT license.
+
+Recommended repository topics:
+`casper-blockchain`, `casper-network`, `buildathon`, `rwa`, `defi`, `agentic-ai`.

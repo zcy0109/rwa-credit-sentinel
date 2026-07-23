@@ -89,3 +89,6 @@ export function decideFinancingGate(score: number): FinancingGateResult {
     explanation: "Risk credential is below the financing pool threshold."
   };
 }
+
+export * from "./execution.js";
+export * from "./benchmark.js";

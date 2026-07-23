@@ -1,57 +1,73 @@
-# Verification Guide
+# Finals Verification Guide
 
-Run the full local verification suite:
+## One-Command Check
 
 ```bash
 npm run verify
 ```
 
-This command checks:
+The command verifies:
 
-- All workspace builds.
-- Shared, Casper, and API tests.
-- Casper mock attestation smoke test.
-- Risk Registry contract source files and expected entry points.
-- Built frontend bundle includes the Casper registry path panel, contract deployment hash, registry write hash, and contract hash.
-- API health, report generation, contract-call preview generation, and credential registry persistence.
-- Rust/Cargo availability as a warning-only check.
+- all workspaces build
+- shared-domain, Casper-adapter, and API tests pass
+- mock Casper attestation is deterministic
+- the contract contains both credential and execution-intent entry points
+- the frontend contains the published finals contract and transaction evidence
+- the API completes report, policy evaluation, idempotent anchor, and registry paths
+- caller-supplied policy overrides cannot weaken the server-locked vault policy
+- the benchmark contains 30 cases and covers all nine policy checks
+- the Rust/Cargo toolchain is visible
 
-## Expected Result
-
-The command should end with a summary like:
-
-```text
-Verification summary:
-- PASS: Build all workspaces
-- PASS: Run automated tests
-- PASS: Run Casper mock smoke
-- PASS: Check Risk Registry contract source
-- PASS: Check built frontend includes registry path
-- PASS: Exercise API report and credential registry
-- WARN: Check Rust/Cargo availability
-```
-
-The Rust/Cargo warning is expected on machines without the Casper contract toolchain. It does not block local TypeScript verification. The submitted build already includes a compiled/deployed Testnet contract and a real registry write.
-
-## Real Casper Testnet Check
-
-After creating and funding a Casper Testnet account, run:
+## Security Check
 
 ```bash
-npm run casper:preflight
-npm run casper:smoke:real
+npm audit --audit-level=high
 ```
 
-`casper:preflight` should pass before submitting a real smoke transaction. It confirms the signing key is readable, the public key is derived, the RPC node responds, and the account has enough motes for the configured contract call payment.
+Expected result: zero known high or critical package vulnerabilities.
 
-The verified registry write is:
+GitHub CI and CodeQL workflows are in `.github/workflows`.
 
-```text
-https://testnet.cspr.live/transaction/096907b2961fe30d01d0267a2876922225d2b43e37f124a40608330e500341f0
-```
+## Manual Product Test
 
-The already-written credential can be read back without a private key:
+1. Run `npm run dev`.
+2. Open `http://127.0.0.1:5173`.
+3. Load the sample and run underwriting.
+4. Evaluate the default capital action and confirm:
+   - decision `Approve`
+   - authorization `policy_key`
+   - principal cap `$125,000`
+   - `9 / 9` checks pass
+5. Lower collateral coverage below `1.15x`; confirm `Review` and `reviewer_multisig`.
+6. Clear credential verification; confirm `Block`, authorization `none`, and zero principal.
+7. Download the audit bundle and confirm it contains the request, report, policy, checks, trace,
+   benchmark, and chain evidence.
+
+## Public Casper Readback
 
 ```bash
 npm run casper:read:registry
+npm run casper:read:execution -- --intent-id=intent-09f5ecde
 ```
+
+These commands query Testnet state without a private key. Expected identifiers:
+
+```text
+Contract:
+e5c63c54f0c147703548976c174087d4a8e087da191adc2f466fa101e1154a3a
+
+Asset:
+invoice:demo-acme-batch
+
+Intent:
+intent-09f5ecde
+
+Intent hash:
+a22b8596a3648937b165985d94c045a7660e9b1f1bee8fdac414407987e71a6e
+```
+
+## Live-Write Safety
+
+The local judge path should use `CASPER_MODE=mock`. Use `CASPER_MODE=real` only when intentionally
+submitting a new Testnet write from a funded owner key. Never expose the signing key in the
+browser, logs, screenshots, or demo video.

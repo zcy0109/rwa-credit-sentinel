@@ -2,17 +2,19 @@
 
 This folder contains the Casper smart-contract layer for RWA Credit Sentinel.
 
-The contract is a dedicated on-chain registry that stores the latest risk credential per RWA asset
-ID. It gives the buildathon prototype a real Casper Testnet contract hash, not only a native
-transfer proof.
+The contract is a dedicated on-chain registry that links an RWA risk credential to the bounded
+capital intent produced from that credential. It gives the finals prototype two independently
+queryable Casper state transitions instead of using a transaction hash as a proxy for application
+state.
 
 ## Contract Shape
 
 Entry points:
 
-- `init()` - sets the deployer as the registry owner.
 - `record_credential(asset_id, risk_score, decision, report_hash, evidence_hash, created_at_ms)` - writes the latest credential for an asset.
 - `get_credential(asset_id)` - returns the latest credential for an asset.
+- `record_execution_intent(intent_id, asset_id, report_hash, decision, authorization, principal_cap_usd, intent_hash, created_at_ms)` - stores the policy-constrained capital action.
+- `get_execution_intent(intent_id)` - returns the stored execution intent.
 - `owner()` - returns the account allowed to record credentials.
 
 Stored record:
@@ -25,12 +27,25 @@ Stored record:
 - `issuer`
 - `created_at_ms`
 
+Stored execution intent:
+
+- `intent_id`
+- `asset_id`
+- `report_hash`
+- `decision`
+- `authorization`
+- `principal_cap_usd`
+- `intent_hash`
+- `issuer`
+- `created_at_ms`
+
 ## Why This Matters
 
 The native-transfer path proves a transaction-producing Casper integration. The registry contract makes the Casper contribution product-native:
 
-- DeFi lending pools can query Casper for the latest credential.
+- DeFi lending pools can query Casper for the latest credential and the resulting capital intent.
 - The report hash and evidence hash become contract state, not only transaction metadata.
+- The execution intent binds a policy decision and principal ceiling back to the credential report.
 - The owner check models a real issuer/underwriter authority.
 
 ## Current Status
@@ -59,25 +74,31 @@ Deploy it to Casper Testnet with:
 npm run casper:deploy:registry
 ```
 
-The buildathon prototype has deployed this contract and called its `record_credential` entry point
-from the TypeScript API through `casper-js-sdk`.
+The finals prototype deployed this contract and called both write entry points from TypeScript
+through `casper-js-sdk`.
 
 Deployment:
 
 ```text
-https://testnet.cspr.live/transaction/735dab5995084abfe4494398ff6f3c6677055a4d5025b79918ae9c4a202a93b9
+https://testnet.cspr.live/transaction/694147496b0af6dfe83bf0a32cecd16ae6e09b8a141087f6cc0bcffea0f252c0
 ```
 
 Registry write:
 
 ```text
-https://testnet.cspr.live/transaction/096907b2961fe30d01d0267a2876922225d2b43e37f124a40608330e500341f0
+https://testnet.cspr.live/transaction/2267d02bb600d20d500a6c670bdda5576ef5ab950db04f63302266538a1159d9
+```
+
+Execution intent write:
+
+```text
+https://testnet.cspr.live/transaction/e84e316b075fd257f42e91229cdf7762f8089993b01ea64f5e989303360886f6
 ```
 
 Contract hash:
 
 ```text
-aeda10dacdee9cefa8b857c3f6c8a0b2edeb6c19421f16189016ab1a2359b391
+e5c63c54f0c147703548976c174087d4a8e087da191adc2f466fa101e1154a3a
 ```
 
 ## Integration Checklist
@@ -86,5 +107,6 @@ aeda10dacdee9cefa8b857c3f6c8a0b2edeb6c19421f16189016ab1a2359b391
 2. Deploy it on Casper Testnet.
 3. Add `CASPER_RISK_REGISTRY_HASH` to `.env`.
 4. Call `record_credential` from `CasperRegistryAttestationAdapter`.
-5. Show the contract hash and transaction hash in the frontend.
-6. Keep `native-transfer-memo` as a fallback proof path.
+5. Evaluate a bounded capital action and call `record_execution_intent`.
+6. Read both dictionaries back through Casper RPC.
+7. Show the contract, package, write transactions, and dictionary keys in the frontend.

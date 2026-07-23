@@ -135,7 +135,10 @@ function readPrivateKey() {
   }
 
   if (config.privateKeyPemFile) {
-    return PrivateKey.fromPem(readFileSync(config.privateKeyPemFile, "utf8"), algorithm);
+    return PrivateKey.fromPem(
+      readFileSync(resolve(repoRoot, config.privateKeyPemFile), "utf8"),
+      algorithm
+    );
   }
 
   if (config.privateKeyHex) {

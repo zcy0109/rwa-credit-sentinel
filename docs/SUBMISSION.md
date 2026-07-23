@@ -1,126 +1,126 @@
-# DoraHacks Submission Draft
+# Casper Agentic Buildathon Finals Submission
 
-## Project Name
+## Project
 
-RWA Credit Sentinel
+**RWA Credit Sentinel**
 
-## Repository
+RWA Credit Sentinel is a bounded autonomous underwriting and execution prototype for
+invoice-backed financing. Eight specialized agents turn public evidence into a verifiable risk
+credential, evaluate that credential against deterministic vault policy, cap executable principal,
+and anchor both the credential and resulting execution intent on Casper Testnet.
 
-https://github.com/zcy0109/rwa-credit-sentinel
+Repository: https://github.com/zcy0109/rwa-credit-sentinel
 
-## One-Liner
+## Why It Matters
 
-Agentic RWA credit-risk assessment that writes verifiable risk credentials to a Casper Testnet registry contract for DeFi financing gates.
+DeFi protocols cannot safely act on an opaque risk score. They need to know what evidence was
+used, which policy boundaries passed, who is authorized to act, and whether the decision can be
+verified later.
 
-## Suggested DoraHacks Summary
+This project creates a two-proof chain:
 
-RWA Credit Sentinel is an agentic AI underwriting prototype for real-world asset lending. Specialized agents analyze an invoice-backed financing request, generate a structured risk credential, hash the report and evidence, write the credential to a deployed Casper Testnet registry contract, and expose the result to a DeFi lending gate.
+1. A risk credential binds the asset, score, decision, report hash, and evidence hash.
+2. An execution intent binds that credential to nine vault-policy checks, a principal cap, and an
+   explicit authorization mode.
 
-The demo includes a working web app, API, deterministic multi-agent risk workflow, local credential registry, real Casper Testnet contract deployment, and a verified `record_credential` write transaction.
+Private keys remain outside the agent workflow, and the signed policy is locked on the server
+rather than accepted from the caller. Hard failures block execution, soft exceptions route to
+reviewer multisig, and only a clean autonomous case receives policy-key authorization.
 
-The repository also includes a public readback command, `npm run casper:read:registry`, which reads the written credential back from Casper RPC without requiring a private key.
+## Judge Test Path
 
-## Short Description
+1. Run `npm install` and `npm run dev`.
+2. Open `http://127.0.0.1:5173`.
+3. Select **Load sample**, then **Run underwriting agents**.
+4. Inspect the risk score, factor explanation, evidence hash, and agent trace.
+5. Keep the default autonomous policy and select **Evaluate capital action**.
+6. Inspect the nine checks, computed principal cap, authorization, and execution trace.
+7. Change collateral coverage below `1.15x` to see a reviewer-multisig decision.
+8. Clear credential verification to see execution blocked.
+9. Use **Download audit bundle** to export the complete decision record.
 
-RWA Credit Sentinel helps DeFi lending systems evaluate real-world asset financing requests. A user submits an invoice or asset-backed financing request, specialized agents generate a structured risk report, and the system records the report hash, evidence hash, risk score, decision, and timestamp in a Casper Testnet registry contract. A DeFi gate then classifies the financing request as eligible, review, or rejected.
+The UI defaults to a deterministic local proof so judges can safely repeat the workflow without a
+private key or Testnet CSPR. The published Testnet transactions below prove the same contract
+paths were deployed, written, and read back.
 
-The prototype also exposes a local credential registry API so financing protocols can query the latest risk credentials by asset ID during the demo.
+## Casper Testnet Evidence
 
-## Track / Theme Fit
+### Finals contract
 
-- Agentic AI: multi-step agent workflow for data normalization, risk scoring, verification, and decisioning.
-- RWA: focused on invoice and real-world receivables financing.
-- DeFi: risk credential drives financing-pool eligibility and advance-rate decisions.
-- Casper: deployed native Casper Rust contract plus real Testnet `record_credential` call using `casper-js-sdk`.
+- Deployment:
+  https://testnet.cspr.live/transaction/694147496b0af6dfe83bf0a32cecd16ae6e09b8a141087f6cc0bcffea0f252c0
+- Contract hash:
+  `e5c63c54f0c147703548976c174087d4a8e087da191adc2f466fa101e1154a3a`
+- Package hash:
+  `aacf4a08413e873bb3f67b2d7ce78230e3d3e2bde558c2203bd55b1a37853345`
 
-## Casper Evidence
+### Risk credential write
 
-Contract deployment:
+- Entry point: `record_credential`
+- Transaction:
+  https://testnet.cspr.live/transaction/2267d02bb600d20d500a6c670bdda5576ef5ab950db04f63302266538a1159d9
+- Asset: `invoice:demo-acme-batch`
+- Score / decision: `78 / Eligible`
+- Dictionary key:
+  `dictionary-11983ddea2cdd494ee8d074580ff8fec97e7a95b122380ecb44a6dc72f52e860`
 
-```text
-https://testnet.cspr.live/transaction/735dab5995084abfe4494398ff6f3c6677055a4d5025b79918ae9c4a202a93b9
-```
+### Execution intent write
 
-Credential registry write:
+- Entry point: `record_execution_intent`
+- Transaction:
+  https://testnet.cspr.live/transaction/e84e316b075fd257f42e91229cdf7762f8089993b01ea64f5e989303360886f6
+- Intent: `intent-09f5ecde`
+- Decision / authorization: `Approve / policy_key`
+- Principal cap: `$125,000`
+- Policy result: `9 / 9 checks passed`
+- Dictionary key:
+  `dictionary-38a776d306dab1d720019cc91f9734e0a71570e0160affb5a567f50b621f9f96`
 
-```text
-https://testnet.cspr.live/transaction/096907b2961fe30d01d0267a2876922225d2b43e37f124a40608330e500341f0
-```
+## Repeatable Evidence
 
-Contract hash:
-
-```text
-aeda10dacdee9cefa8b857c3f6c8a0b2edeb6c19421f16189016ab1a2359b391
-```
-
-Package hash:
-
-```text
-2765865230aba876704f1b793b2a124adcdf532336c9b455de692ea885637df3
-```
-
-Entry point:
-
-```text
-record_credential
-```
-
-Readback proof:
-
-```text
+```bash
 npm run casper:read:registry
-asset_id: invoice:demo-acme-batch
-risk_score: 78
-decision: Eligible
-dictionary_key: dictionary-f14bf47bde84eeda7dda934bdac75fc0a6d043027e27cf31b2cf6f8dcd17be45
+npm run casper:read:execution -- --intent-id=intent-09f5ecde
+npm run verify
+npm audit --audit-level=high
 ```
 
-## Technical Highlights
+The readback commands query Casper RPC without a private key. The full verification suite builds
+every workspace, runs domain/API/Casper tests, exercises the product flow, and checks the
+30-case policy benchmark.
 
-- TypeScript monorepo with API, frontend, shared domain package, and Casper package.
-- Working web demo at `http://127.0.0.1:5173` after `npm run dev`.
-- Deterministic report and evidence hashing.
-- Agent trace displayed in the UI for judge review.
-- Casper adapter supports `mock`, `native-transfer-memo`, and `contract-registry` modes.
-- Native Casper Rust contract stores latest risk credential per asset ID.
-- Real mode calls the deployed contract's `record_credential` entry point.
-- Public readback script queries the contract dictionary from Casper RPC.
-- Every report response includes a `registryCall` preview with the exact contract arguments.
-- Local credential registry exposes `GET /api/credentials` and `GET /api/credentials/:assetId`.
-- Full verification is available with `npm run verify`.
-- `npm run casper:preflight` checks real-mode signing key, RPC reachability, and funded balance.
+## Evaluation Evidence
 
-## Demo Flow
+The deterministic benchmark contains 30 labeled cases and covers every policy failure mode:
 
-1. Open the web app.
-2. Show the top proof strip with the deployed Casper contract and the real registry write.
-3. Review the prefilled invoice-backed RWA financing request.
-4. Click "Run agent assessment".
-5. Review the risk score and decision.
-6. Inspect the four-agent trace.
-7. Inspect factor scores.
-8. Inspect the Casper credential panel.
-9. Open the registry path panel and show `record_credential` arguments.
-10. Inspect the recent credential registry and explain how a DeFi protocol can query by asset ID.
+- risk score floor
+- collateral coverage
+- advance-rate ceiling
+- liquidity buffer
+- evidence freshness
+- single-asset exposure
+- sanctions screening
+- credential verification
+- replay protection
 
-## Submission Links
+The benchmark validates policy behavior; Testnet transactions validate chain integration. It is
+not presented as a predictive credit-model accuracy claim.
 
-- GitHub: `https://github.com/zcy0109/rwa-credit-sentinel`
-- Casper contract deployment: `https://testnet.cspr.live/transaction/735dab5995084abfe4494398ff6f3c6677055a4d5025b79918ae9c4a202a93b9`
-- Casper credential write: `https://testnet.cspr.live/transaction/096907b2961fe30d01d0267a2876922225d2b43e37f124a40608330e500341f0`
-- Demo video: pending upload
+## Long-Term Launch Plan
 
-## Current Limitations
+The project has a gated 30/90/180-day plan:
 
-- Risk scoring is deterministic and explainable; LLM enrichment can be added later without changing the credential flow.
-- The local UI defaults to mock mode so judges can run it without private keys or Testnet CSPR.
-- The current contract stores the latest credential per asset ID; historical versions and richer query indexing are future work.
-- This prototype does not process private KYC documents, custody assets, or execute loans.
+- a public Testnet integration pilot and external schema validation
+- a controlled shadow-mode trial with policy versioning and multisig review
+- an audited, legally approved limited receivables launch
 
-## Future Roadmap
+The full milestones, metrics, launch gates, and Casper ecosystem contribution are documented in
+`docs/LAUNCH_PLAN.md`. Security assumptions and residual risks are documented in
+`docs/THREAT_MODEL.md`.
 
-- Contract readback UI for live `get_credential` verification.
-- Historical credential versions per asset ID.
-- x402 pay-per-report agent flow.
-- RWA data connectors for invoices, trade receivables, public filings, and debtor checks.
-- Underwriter dashboard and DeFi protocol API.
+## Scope
+
+The finals prototype prepares and anchors bounded execution intents. It does not custody assets,
+move loan principal, ingest private KYC documents, or claim production financial safety. Those
+boundaries are intentional: the product demonstrates accountable agent authorization without
+placing funds or secrets inside an LLM-controlled loop.

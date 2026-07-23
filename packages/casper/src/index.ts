@@ -1,7 +1,12 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import casperSdk from "casper-js-sdk";
-import type { CasperAttestation, RiskDecision } from "@rwa-sentinel/shared";
+import type { CasperAttestation, ExecutionIntent, RiskDecision } from "@rwa-sentinel/shared";
+export {
+  EXECUTION_ENTRY_POINTS,
+  toExecutionIntentRecordArgs,
+  type ExecutionIntentRecordArgs
+} from "./executionContract.js";
 export {
   buildRiskRegistryCallPreview,
   RISK_REGISTRY_ENTRY_POINTS,
@@ -11,6 +16,7 @@ export {
   type RiskRegistryRecordArgs
 } from "./registryContract.js";
 import { RISK_REGISTRY_ENTRY_POINTS, toRiskRegistryRecordArgs } from "./registryContract.js";
+import { EXECUTION_ENTRY_POINTS, toExecutionIntentRecordArgs } from "./executionContract.js";
 
 const {
   Args,
@@ -40,6 +46,21 @@ export type AttestRiskCredentialInput = {
 
 export type CasperAdapter = {
   attestRiskCredential(input: AttestRiskCredentialInput): Promise<CasperAttestation>;
+};
+
+export type ExecutionIntentAttestation = {
+  intentId: string;
+  intentHash: string;
+  network: "casper-testnet" | "mock";
+  contractHash?: string;
+  entryPoint: typeof EXECUTION_ENTRY_POINTS.recordExecutionIntent;
+  transactionHash: string;
+  explorerUrl?: string;
+  createdAt: string;
+};
+
+export type ExecutionIntentAdapter = {
+  anchorExecutionIntent(intent: ExecutionIntent, intentHash: string): Promise<ExecutionIntentAttestation>;
 };
 
 export type CasperAdapterConfig = {
@@ -84,6 +105,95 @@ export function createCasperAdapterFromEnv(env: NodeJS.ProcessEnv = process.env)
   }
 
   return new MockCasperAdapter();
+}
+
+export function createExecutionIntentAdapterFromEnv(
+  env: NodeJS.ProcessEnv = process.env
+): ExecutionIntentAdapter {
+  const config = readCasperConfig(env);
+  if (config.mode === "real" && hasSigningKey(config) && config.riskRegistryHash) {
+    return new CasperExecutionIntentAdapter(config);
+  }
+
+  return new MockExecutionIntentAdapter();
+}
+
+export class MockExecutionIntentAdapter implements ExecutionIntentAdapter {
+  async anchorExecutionIntent(
+    intent: ExecutionIntent,
+    intentHash: string
+  ): Promise<ExecutionIntentAttestation> {
+    const transactionHash = await sha256Hex(`${intent.intentId}:${intentHash}`);
+    return {
+      intentId: intent.intentId,
+      intentHash,
+      network: "mock",
+      entryPoint: EXECUTION_ENTRY_POINTS.recordExecutionIntent,
+      transactionHash: `mock-${transactionHash.slice(0, 48)}`,
+      createdAt: new Date().toISOString()
+    };
+  }
+}
+
+export class CasperExecutionIntentAdapter implements ExecutionIntentAdapter {
+  constructor(private readonly config: CasperAdapterConfig) {}
+
+  async anchorExecutionIntent(
+    intent: ExecutionIntent,
+    intentHash: string
+  ): Promise<ExecutionIntentAttestation> {
+    if (!this.config.riskRegistryHash) {
+      throw new Error("CASPER_RISK_REGISTRY_HASH is required for execution intent anchoring.");
+    }
+
+    const privateKey = readPrivateKey(this.config);
+    const rpcClient = new RpcClient(new HttpHandler(this.config.rpcUrl));
+    const recordArgs = toExecutionIntentRecordArgs(intent, intentHash);
+    const deployHeader = DeployHeader.default();
+    deployHeader.account = privateKey.publicKey;
+    deployHeader.chainName = this.config.chainName;
+    const session = new ExecutableDeployItem();
+    session.storedContractByHash = new StoredContractByHash(
+      ContractHash.fromJSON(normalizeHash(this.config.riskRegistryHash)),
+      EXECUTION_ENTRY_POINTS.recordExecutionIntent,
+      Args.fromMap(
+        {
+          intent_id: CLValue.newCLString(recordArgs.intent_id),
+          asset_id: CLValue.newCLString(recordArgs.asset_id),
+          report_hash: CLValue.newCLString(recordArgs.report_hash),
+          decision: CLValue.newCLString(recordArgs.decision),
+          authorization: CLValue.newCLString(recordArgs.authorization),
+          principal_cap_usd: CLValue.newCLUint64(recordArgs.principal_cap_usd.toString()),
+          intent_hash: CLValue.newCLString(recordArgs.intent_hash),
+          created_at_ms: CLValue.newCLUint64(recordArgs.created_at_ms.toString())
+        } as unknown as Record<string, never>
+      )
+    );
+    const payment = ExecutableDeployItem.standardPayment(this.config.contractCallPaymentMotes);
+    const deploy = Deploy.makeDeploy(deployHeader, payment, session);
+    deploy.sign(privateKey);
+    const result = (await rpcClient.putDeploy(deploy)) as { deployHash?: unknown };
+    const transactionHash = stringifyTransactionHash(result.deployHash ?? deploy.hash);
+    const confirmed = await rpcClient.waitForDeploy(
+      deploy,
+      Number(process.env.CASPER_REGISTRY_WAIT_MS ?? 180_000)
+    );
+    const executionResult = extractDeployExecutionResult(confirmed);
+    if (executionResult?.errorMessage) {
+      throw new Error(`Casper execution intent call failed: ${executionResult.errorMessage}`);
+    }
+
+    return {
+      intentId: intent.intentId,
+      intentHash,
+      network: "casper-testnet",
+      contractHash: normalizeHash(this.config.riskRegistryHash),
+      entryPoint: EXECUTION_ENTRY_POINTS.recordExecutionIntent,
+      transactionHash,
+      explorerUrl: `${this.config.explorerBaseUrl}/${transactionHash}`,
+      createdAt: new Date(recordArgs.created_at_ms).toISOString()
+    };
+  }
 }
 
 export function readCasperConfig(env: NodeJS.ProcessEnv): CasperAdapterConfig {

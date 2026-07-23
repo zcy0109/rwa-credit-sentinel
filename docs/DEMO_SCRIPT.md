@@ -1,106 +1,128 @@
-# Demo Video Script
+# Finals Demo Script
 
-Target length: 3-5 minutes.
+Target length: 4 minutes.
 
-## 0:00 - Problem
+## 0:00-0:25 - Problem and Product
 
-RWA lending protocols need risk signals from off-chain assets, but PDF reports and private databases are hard to verify. RWA Credit Sentinel turns an agentic risk analysis into a Casper registry credential.
+### Screen
 
-Show the top proof strip first:
+Show the first viewport with the project name, one-sentence workflow, and benchmark metrics.
 
-- Deployed Casper Testnet contract.
-- Real `record_credential` registry write.
-- Contract hash.
-- Explorer links.
+### English narration
 
-Use these links:
+RWA lending agents should not receive an opaque risk score and unrestricted access to capital.
+RWA Credit Sentinel turns public evidence into a verifiable risk credential, evaluates it against
+explicit vault policy, and prepares a bounded execution intent with a complete audit trail.
 
-```text
-Contract deployment:
-https://testnet.cspr.live/transaction/735dab5995084abfe4494398ff6f3c6677055a4d5025b79918ae9c4a202a93b9
+## 0:25-0:55 - Real Casper Proof
 
-Credential write:
-https://testnet.cspr.live/transaction/096907b2961fe30d01d0267a2876922225d2b43e37f124a40608330e500341f0
-```
+### Screen
 
-Clarify that the local interactive demo runs in mock mode by default so judges can repeat it without using private keys or Testnet CSPR.
+Scroll to **Two real state transitions on Casper**. Point to:
 
-## 0:35 - Intake
+- Finals contract deployment and package hash
+- `record_credential` transaction
+- `record_execution_intent` transaction
+- Both dictionary keys
 
-Show the financing request form. The sample request is an invoice-backed asset with requested amount, maturity, debtor profile, asset description, and evidence URLs.
+Open the execution-intent transaction in CSPR.live and show `Status: Success`, then return.
 
-## 1:05 - Agent Workflow
+### English narration
 
-Click "Run agent assessment". Explain the four agents:
+This is not a front-end-only demo. The finals registry contract is deployed on Casper Testnet.
+One successful call stores the underwriting credential. A second call stores the policy decision,
+authorization, principal cap, and canonical intent hash. Both records are publicly readable from
+contract dictionaries.
 
-- Data Agent normalizes the request and evidence references.
-- Risk Agent scores maturity, exposure size, evidence coverage, debtor completeness, and narrative completeness.
-- Verification Agent prepares evidence and report hashes.
-- Decision Agent maps the score to a DeFi financing decision.
+## 0:55-1:35 - Underwriting Agents
 
-## 2:00 - Risk Result
+### Screen
 
-Show the risk score, confidence, and decision. Explain that the decision can drive a financing pool gate: eligible, review, or rejected.
+Select **Load sample**, review the public evidence references, and select
+**Run underwriting agents**. Show the score, factor bars, report hash, evidence hash, and trace.
 
-## 2:30 - Casper Credential
+### English narration
 
-Show the Casper credential panel:
+The first four agents normalize the invoice request, score explainable risk factors, bind public
+evidence into canonical hashes, and issue a structured credential. The credential is the input to
+the execution desk, not a free-form model response.
 
-- Network.
-- Method.
-- Transaction hash.
-- Report hash.
-- Evidence hash.
-- Contract hash and entry point when running in real mode.
+## 1:35-2:35 - Bounded Execution
 
-Explain that real mode uses `casper-js-sdk` to submit a `record_credential` call to the deployed Risk Registry contract.
+### Screen
 
-Mention the readback command:
+Keep **Autonomous** mode and default values. Select **Evaluate capital action**. Show:
 
-```bash
+- Approve intent
+- `$125,000` executable cap
+- `policy_key` authorization
+- `9 / 9` policy checks
+- Four-step execution trace
+
+Then lower collateral coverage below `1.15x` and evaluate again. Show **Route to review** and
+`reviewer_multisig`. Finally clear **Credential verified**, evaluate, and show **Block execution**.
+
+### English narration
+
+The next four agents verify the credential, evaluate nine deterministic boundaries, compute a
+risk-adjusted capital cap, and assign authority. The model cannot override these controls. A clean
+case receives policy-key authorization. A soft exception routes to reviewer multisig. An invalid
+credential receives no authority and is blocked.
+
+## 2:35-3:10 - Execution Intent and Audit Bundle
+
+### Screen
+
+Restore the default sample and approve it. Show the intent ID, asset, decision, authorization,
+failed checks, and intent hash. Point to **Anchor execution intent**, but do not submit a new live
+transaction during recording. Open the published Testnet proof instead. Select
+**Download audit bundle**.
+
+### English narration
+
+The server stores the evaluated intent before anchoring, recomputes its canonical hash, and signs
+outside the agent loop. Repeated requests are idempotent. The downloadable bundle contains the
+request, report, policy snapshot, every check, the trace, and chain evidence for independent
+review.
+
+## 3:10-3:35 - Chain Readback
+
+### Screen
+
+Run:
+
+```powershell
 npm run casper:read:registry
+npm run casper:read:execution -- --intent-id=intent-09f5ecde
 ```
 
-It reads the written `invoice:demo-acme-batch` credential back from Casper RPC.
+Show the matching asset, report hash, decision, authorization, principal cap, intent hash, and
+dictionary keys.
 
-## 3:10 - Registry Path
+### English narration
 
-Show the registry path panel:
+These commands query Casper RPC without a private key. They prove the records are stored in
+contract state, not merely represented by transaction links in the interface.
 
-- Entry point: `record_credential`.
-- Status: `ready-for-contract-call`.
-- Contract hash.
-- JSON runtime arguments.
+## 3:35-4:00 - Evaluation and Close
 
-Explain that the same arguments are what the real adapter submitted to Casper Testnet in the verified smoke run.
-The readback script confirms the contract dictionary stores the same asset ID, risk score, decision, report hash, and evidence hash.
+### Screen
 
-## 3:45 - Local Credential Registry
+Return to the benchmark band. Show 30 cases, decision agreement, invalid-credential block rate,
+and nine covered policy failure modes.
 
-Show the recent credential registry. Explain that a DeFi protocol or underwriter can query the latest risk credential by asset ID through the API, then compare the report hash and evidence hash with the Casper registry transaction.
+### English narration
 
-## 4:10 - Architecture
+The 30-case deterministic benchmark covers every policy boundary and verifies expected
+approve, review, and block behavior. It does not claim predictive model accuracy. The product's
+contribution is accountable autonomy: verifiable inputs, explicit authority, bounded capital, and
+Casper-backed execution evidence.
 
-Show README or repo structure:
+## Recording Notes
 
-- `apps/web`
-- `apps/api`
-- `packages/shared`
-- `packages/casper`
-- `contracts/risk-registry`
-
-Mention that the project is verified with:
-
-```bash
-npm run verify
-```
-
-## 4:40 - Roadmap
-
-Explain next upgrades:
-
-- Contract readback UI for live `get_credential` verification.
-- Historical credential versions.
-- x402 pay-per-report agent flow.
-- More RWA data connectors.
-- Underwriter dashboard and DeFi protocol API.
+- Record at 1080p and 30 fps.
+- Keep the browser at 100 percent zoom.
+- Do not show `.env`, wallet secrets, or private-key files.
+- Say "public evidence references", not "uploaded private contracts".
+- Say "Wasm" as one word.
+- Keep the final video between 3:40 and 4:20.

@@ -14,9 +14,9 @@ async function main() {
   await step("Run Casper mock smoke", () =>
     run(npmCommand, ["--workspace", "packages/casper", "run", "smoke:mock"])
   );
-  await step("Check Risk Registry contract source", checkContractSource);
-  await step("Check built frontend includes registry path", checkFrontendBundle);
-  await step("Exercise API report and credential registry", exerciseApi);
+  await step("Check finals registry contract source", checkContractSource);
+  await step("Check built frontend includes finals proof", checkFrontendBundle);
+  await step("Exercise underwriting, policy, and execution API", exerciseApi);
   await optionalStep("Check Rust/Cargo availability", () => run("cargo", ["--version"]));
 
   printSummary();
@@ -60,11 +60,19 @@ function checkContractSource() {
   assert(existsSync(readmePath), "contracts/risk-registry/README.md is missing");
 
   const source = readFileSync(contractPath, "utf8");
-  for (const token of ["record_credential", "get_credential", "owner", "records"]) {
+  for (const token of [
+    "record_credential",
+    "get_credential",
+    "record_execution_intent",
+    "get_execution_intent",
+    "owner",
+    "records",
+    "execution_intents"
+  ]) {
     assert(source.includes(token), `Contract source does not include ${token}`);
   }
 
-  return "Risk Registry contract source contains write/read/owner entry points.";
+  return "Finals contract contains credential and execution-intent write/read entry points.";
 }
 
 function checkFrontendBundle() {
@@ -75,23 +83,24 @@ function checkFrontendBundle() {
   assert(jsFiles.length > 0, "web dist bundle is missing JavaScript assets");
 
   const bundleText = jsFiles.map((file) => readFileSync(join(assetsDir, file), "utf8")).join("\n");
-  assert(bundleText.includes("Casper Registry Path"), "frontend bundle is missing Casper Registry Path");
+  assert(bundleText.includes("Two real state transitions on Casper"), "frontend bundle is missing finals proof heading");
   assert(bundleText.includes("record_credential"), "frontend bundle is missing record_credential");
-  assert(bundleText.includes("Verified Casper Evidence"), "frontend bundle is missing Casper proof strip");
+  assert(bundleText.includes("record_execution_intent"), "frontend bundle is missing record_execution_intent");
+  assert(bundleText.includes("Anchor execution intent"), "frontend bundle is missing execution anchor action");
   assert(
-    bundleText.includes("735dab5995084abfe4494398ff6f3c6677055a4d5025b79918ae9c4a202a93b9"),
-    "frontend bundle is missing the real Casper contract deployment hash"
+    bundleText.includes("694147496b0af6dfe83bf0a32cecd16ae6e09b8a141087f6cc0bcffea0f252c0"),
+    "frontend bundle is missing the finals contract deployment hash"
   );
   assert(
-    bundleText.includes("096907b2961fe30d01d0267a2876922225d2b43e37f124a40608330e500341f0"),
-    "frontend bundle is missing the real Casper registry write hash"
+    bundleText.includes("2267d02bb600d20d500a6c670bdda5576ef5ab950db04f63302266538a1159d9"),
+    "frontend bundle is missing the finals credential write hash"
   );
   assert(
-    bundleText.includes("aeda10dacdee9cefa8b857c3f6c8a0b2edeb6c19421f16189016ab1a2359b391"),
-    "frontend bundle is missing the deployed contract hash"
+    bundleText.includes("e84e316b075fd257f42e91229cdf7762f8089993b01ea64f5e989303360886f6"),
+    "frontend bundle is missing the execution-intent write hash"
   );
 
-  return "Frontend bundle includes contract deployment, registry write, and registry path proof.";
+  return "Frontend bundle includes finals deploy, credential write, and execution-intent proof.";
 }
 
 async function exerciseApi() {
@@ -150,7 +159,53 @@ async function exerciseApi() {
     assert(Array.isArray(registry.credentials), "credentials registry is not an array");
     assert(registry.credentials.length >= 1, "credentials registry is empty after report creation");
 
-    return `API produced ${credential.report.decision} credential ${credential.attestation.transactionHash}.`;
+    const executionResponse = await fetch(`http://127.0.0.1:${apiPort}/api/execution/evaluate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        assetId: credential.report.assetId,
+        context: {
+          mode: "autonomous",
+          collateralRatio: 1.36,
+          proposedAdvanceRatePercent: 68,
+          liquidityBufferPercent: 31,
+          evidenceFreshness: 92,
+          credentialVerified: true,
+          reportHashVerified: true,
+          covenantBreach: false
+        }
+      })
+    });
+    assert(executionResponse.ok, `POST /api/execution/evaluate returned ${executionResponse.status}`);
+    const execution = await executionResponse.json();
+    assert(execution.evaluation?.checks?.length === 9, "execution policy must expose nine checks");
+    assert(execution.evaluation?.principalCapUsd > 0, "execution principal cap is missing");
+
+    const anchorResponse = await fetch(`http://127.0.0.1:${apiPort}/api/execution/anchor`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ intentId: execution.evaluation.intent.intentId })
+    });
+    assert(anchorResponse.ok, `POST /api/execution/anchor returned ${anchorResponse.status}`);
+    const anchored = await anchorResponse.json();
+    assert(anchored.intentHash?.length === 64, "canonical execution intent hash is missing");
+    assert(
+      anchored.attestation?.entryPoint === "record_execution_intent",
+      "execution intent entry point is missing"
+    );
+    assert(
+      anchored.attestation?.transactionHash?.startsWith("mock-"),
+      "mock execution transaction hash is missing"
+    );
+
+    const benchmarkResponse = await fetch(`http://127.0.0.1:${apiPort}/api/execution/benchmark`);
+    assert(benchmarkResponse.ok, `GET /api/execution/benchmark returned ${benchmarkResponse.status}`);
+    const benchmark = await benchmarkResponse.json();
+    assert(benchmark.sampleCount === 30, "benchmark sample count must be 30");
+    assert(benchmark.agreementRate === 100, "benchmark decision agreement must be 100%");
+    assert(benchmark.coveredChecks?.length === 9, "benchmark must cover all nine policy checks");
+
+    return `API produced credential, ${execution.evaluation.decision} intent, and ${anchored.attestation.transactionHash}.`;
   } finally {
     server.kill();
     if (server.exitCode === null) {

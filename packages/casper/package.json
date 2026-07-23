@@ -11,6 +11,8 @@
     "preflight:real": "tsx scripts/preflight.ts",
     "deploy:registry": "tsx scripts/deployRegistry.ts",
     "read:registry": "tsx scripts/readRegistry.ts",
+    "anchor:execution": "tsx scripts/anchorExecutionIntent.ts",
+    "read:execution": "tsx scripts/readExecutionIntent.ts",
     "smoke:mock": "tsx scripts/smoke.ts --mode=mock",
     "smoke:real": "tsx scripts/smoke.ts --mode=real"
   },

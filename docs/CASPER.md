@@ -1,114 +1,119 @@
 # Casper Integration
 
-## Current Integration Strategy
+## Finals Architecture
 
-The project supports three Casper attestation paths:
+The deployed Risk Registry contract provides two linked Casper state transitions:
 
-- `mock`: deterministic local attestation for demos without secrets.
-- `contract-registry`: real Casper Testnet contract call to `record_credential`.
-- `native-transfer-memo`: fallback historical proof path using a Casper Testnet self-transfer.
+1. `record_credential` stores an issuer-bound underwriting credential.
+2. `record_execution_intent` stores the deterministic policy decision that consumes that
+   credential.
 
-The buildathon submission's primary Casper integration is the deployed Risk Registry contract. The API can map a risk credential into Casper runtime arguments, submit a `record_credential` deploy, wait for execution, and return the transaction hash, contract hash, and explorer URL.
+This separates analysis from authority. The execution record includes the asset, report hash,
+decision, authorization mode, principal cap, canonical intent hash, issuer, and timestamp.
 
-## Testnet Evidence
+## Finals Testnet Evidence
 
-### Contract Deployment
+### Contract deployment
 
 ```text
-Deploy hash:
-735dab5995084abfe4494398ff6f3c6677055a4d5025b79918ae9c4a202a93b9
+Transaction:
+694147496b0af6dfe83bf0a32cecd16ae6e09b8a141087f6cc0bcffea0f252c0
 
 Explorer:
-https://testnet.cspr.live/transaction/735dab5995084abfe4494398ff6f3c6677055a4d5025b79918ae9c4a202a93b9
+https://testnet.cspr.live/transaction/694147496b0af6dfe83bf0a32cecd16ae6e09b8a141087f6cc0bcffea0f252c0
 
 Block height:
-8320720
+8594853
 
 Contract hash:
-aeda10dacdee9cefa8b857c3f6c8a0b2edeb6c19421f16189016ab1a2359b391
+e5c63c54f0c147703548976c174087d4a8e087da191adc2f466fa101e1154a3a
 
 Package hash:
-2765865230aba876704f1b793b2a124adcdf532336c9b455de692ea885637df3
+aacf4a08413e873bb3f67b2d7ce78230e3d3e2bde558c2203bd55b1a37853345
 ```
 
-### Real Credential Registry Write
+### Risk credential
 
 ```text
-Transaction hash:
-096907b2961fe30d01d0267a2876922225d2b43e37f124a40608330e500341f0
-
-Explorer:
-https://testnet.cspr.live/transaction/096907b2961fe30d01d0267a2876922225d2b43e37f124a40608330e500341f0
-
 Entry point:
 record_credential
 
-Asset ID:
+Transaction:
+2267d02bb600d20d500a6c670bdda5576ef5ab950db04f63302266538a1159d9
+
+Explorer:
+https://testnet.cspr.live/transaction/2267d02bb600d20d500a6c670bdda5576ef5ab950db04f63302266538a1159d9
+
+Asset:
 invoice:demo-acme-batch
 
-Risk score:
-78
+Risk score / decision:
+78 / Eligible
 
-Decision:
-Eligible
-
-Issuer public key:
-0202a88b97ebb35fc1a2352d24ab37347fe5d909561cf41ba9f1af9c1d84e1bcd5db
+Dictionary key:
+dictionary-11983ddea2cdd494ee8d074580ff8fec97e7a95b122380ecb44a6dc72f52e860
 ```
 
-### Registry Readback
+### Execution intent
 
-The written credential can be read back from Casper RPC without a private key:
+```text
+Entry point:
+record_execution_intent
+
+Transaction:
+e84e316b075fd257f42e91229cdf7762f8089993b01ea64f5e989303360886f6
+
+Explorer:
+https://testnet.cspr.live/transaction/e84e316b075fd257f42e91229cdf7762f8089993b01ea64f5e989303360886f6
+
+Intent:
+intent-09f5ecde
+
+Decision / authorization:
+Approve / policy_key
+
+Principal cap:
+125000 USD
+
+Intent hash:
+a22b8596a3648937b165985d94c045a7660e9b1f1bee8fdac414407987e71a6e
+
+Dictionary key:
+dictionary-38a776d306dab1d720019cc91f9734e0a71570e0160affb5a567f50b621f9f96
+```
+
+## Public Readback
+
+No private key is required:
 
 ```bash
 npm run casper:read:registry
+npm run casper:read:execution -- --intent-id=intent-09f5ecde
 ```
 
-Verified readback:
-
-```json
-{
-  "asset_id": "invoice:demo-acme-batch",
-  "risk_score": 78,
-  "decision": "Eligible",
-  "report_hash": "9fd81df9ea02d7448837e020ba84ebc45904cf52adeefe628cb31f5aa8f65d0ed",
-  "evidence_hash": "4df81df9ea02d7448837e020ba84ebc45904cf52adeefe628cb31f5aa8f65d0aa"
-}
-```
-
-### Historical Fallback Transfer Proof
-
-The project also produced an earlier Casper Testnet native-transfer memo proof:
-
-```text
-https://testnet.cspr.live/transaction/34e2e8d36239d4f96dc2d5e38337a1834c6289ebbfc4ca24e99619ccfc6d1b65
-```
-
-This is retained as a fallback integration path, but the submitted product path is the registry contract write above.
+The readback output must match the transaction evidence, report hash, decision, authorization,
+principal cap, intent hash, and dictionary keys.
 
 ## Contract Entry Points
 
-The dedicated Casper contract in `contracts/risk-registry` exposes:
-
 - `record_credential(asset_id, risk_score, decision, report_hash, evidence_hash, created_at_ms)`
 - `get_credential(asset_id)`
+- `record_execution_intent(intent_id, asset_id, report_hash, decision, authorization, principal_cap_usd, intent_hash, created_at_ms)`
+- `get_execution_intent(intent_id)`
 - `owner()`
 
-The contract stores:
+Only the contract owner can write registry records. This models an authorized underwriter or
+policy executor. Public users can verify dictionary state without the signing key.
 
-- Asset ID
-- Risk score
-- Decision
-- Report hash
-- Evidence hash
-- Issuer account
-- Created timestamp
+## Modes
 
-The owner check models a real underwriter or risk-credential issuer authority.
+- `mock`: deterministic local attestation for repeatable judge testing.
+- `real`: owner-signed Casper Testnet contract calls.
+- `native-transfer-memo`: retained only as a historical fallback path.
+
+Signing is server-side. The browser and agent prompts never receive a private key.
 
 ## Environment
-
-Copy `.env.example` to `.env` and set:
 
 ```bash
 CASPER_MODE=real
@@ -116,50 +121,26 @@ CASPER_RPC_URL=https://node.testnet.casper.network/rpc
 CASPER_CHAIN_NAME=casper-test
 CASPER_PRIVATE_KEY_PEM_FILE=.secrets/Account_1_secret_key.pem
 CASPER_KEY_ALGORITHM=SECP256K1
-CASPER_RISK_REGISTRY_HASH=aeda10dacdee9cefa8b857c3f6c8a0b2edeb6c19421f16189016ab1a2359b391
+CASPER_RISK_REGISTRY_HASH=e5c63c54f0c147703548976c174087d4a8e087da191adc2f466fa101e1154a3a
+CASPER_RISK_REGISTRY_PACKAGE_HASH=aacf4a08413e873bb3f67b2d7ce78230e3d3e2bde558c2203bd55b1a37853345
 CASPER_CONTRACT_CALL_PAYMENT_MOTES=20000000000
 ```
 
-Use `CASPER_KEY_ALGORITHM=SECP256K1` when the Casper public key starts with `02`.
-Use `CASPER_KEY_ALGORITHM=ED25519` when the Casper public key starts with `01`.
-
-Do not commit `.env`, private keys, seed phrases, or funded account secrets.
+Never commit `.env`, private keys, seed phrases, or funded account secrets.
 
 ## Commands
 
-Mock smoke test:
-
 ```bash
 npm --workspace packages/casper run smoke:mock
-```
-
-Real-mode preflight:
-
-```bash
 npm run casper:preflight
-```
-
-Deploy the registry contract:
-
-```bash
 npm run casper:deploy:registry
-```
-
-Write a real credential to the deployed registry contract:
-
-```bash
 npm run casper:smoke:real
-```
-
-Read the verified credential back from the deployed registry contract:
-
-```bash
+npm run casper:anchor:execution
 npm run casper:read:registry
+npm run casper:read:execution -- --intent-id=intent-09f5ecde
 ```
 
 ## Contract Build
-
-The contract source compiles to Casper-compatible Wasm with Rust nightly, the `wasm32-unknown-unknown` target, and Binaryen lowering:
 
 ```bash
 cargo +nightly build -Z build-std=core,alloc --target wasm32-unknown-unknown --release
@@ -171,17 +152,11 @@ npm exec --yes --package=binaryen@130.0.0 -- wasm-opt \
   -o wasm/RiskRegistry.wasm
 ```
 
-The optimized deployable artifact is:
+Deployable artifact:
 
 ```text
 contracts/risk-registry/wasm/RiskRegistry.wasm
 ```
 
-## Funding A Testnet Account
-
-1. Create or import a Casper Testnet account.
-2. Copy the public key shown by `npm run casper:preflight` or your wallet.
-3. Request Testnet CSPR from the official CSPR.live testnet faucet.
-4. Wait for the faucet transaction to finalize.
-5. Re-run `npm run casper:preflight`.
-6. If the balance check passes, run `npm run casper:smoke:real`.
+The qualification contract remains documented in `contracts/risk-registry/DEPLOYMENTS.md` as a
+historical baseline.
