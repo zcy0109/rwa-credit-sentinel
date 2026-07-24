@@ -7,6 +7,8 @@ resulting execution intent on Casper Testnet.
 
 Built for the **Casper Agentic Buildathon 2026 Finals**.
 
+[Open the public judge demo](https://rwa-credit-sentinel-finals.zhangchenyu399.chatgpt.site)
+
 [![CI](https://github.com/zcy0109/rwa-credit-sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/zcy0109/rwa-credit-sentinel/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/zcy0109/rwa-credit-sentinel/actions/workflows/codeql.yml/badge.svg)](https://github.com/zcy0109/rwa-credit-sentinel/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
