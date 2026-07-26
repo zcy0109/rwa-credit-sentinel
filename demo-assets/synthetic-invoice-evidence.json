@@ -1,0 +1,22 @@
+{
+  "schema": "rwa-credit-sentinel/demo-evidence/v1",
+  "synthetic": true,
+  "asset": {
+    "type": "invoice",
+    "reference": "INV-DEMO-2026-071",
+    "currency": "USD",
+    "faceValue": 125000,
+    "maturityDays": 30
+  },
+  "debtor": {
+    "name": "Acme Manufacturing",
+    "country": "US"
+  },
+  "evidence": {
+    "purchaseOrderMatched": true,
+    "deliveryConfirmed": true,
+    "historicalPaymentsOnTime": 11,
+    "historicalPaymentsReviewed": 12
+  },
+  "notice": "Synthetic demonstration data only. This file is not a commercial claim or real invoice."
+}

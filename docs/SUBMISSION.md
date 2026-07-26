@@ -11,6 +11,8 @@ and anchor both the credential and resulting execution intent on Casper Testnet.
 
 Repository: https://github.com/zcy0109/rwa-credit-sentinel
 
+Public judge demo: https://rwa.chenyuzhanglabs.com
+
 ## Why It Matters
 
 DeFi protocols cannot safely act on an opaque risk score. They need to know what evidence was
@@ -29,9 +31,10 @@ reviewer multisig, and only a clean autonomous case receives policy-key authoriz
 
 ## Judge Test Path
 
-1. Run `npm install` and `npm run dev`.
-2. Open `http://127.0.0.1:5173`.
-3. Select **Verify live contract state** and confirm all 13 comparisons pass.
+1. Open `https://rwa.chenyuzhanglabs.com`. No account or local setup is required.
+2. Select **Verify live contract state** and confirm all 13 comparisons pass.
+3. For local source verification, run `npm install`, `npm run dev`, and open
+   `http://127.0.0.1:5173`.
 4. Select **Load sample**, inspect the synthetic four-document evidence pack, and run underwriting.
 5. Alternatively, use **Add evidence files** with small JSON, CSV, TXT, or PDF files. The server
    recomputes every content hash and explicitly states that claim verification was not performed.
