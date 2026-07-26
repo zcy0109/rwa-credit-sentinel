@@ -257,7 +257,7 @@ Fail-safe 机制，以及对未经验证的 AI 行为进行阻断。
 - 依次点击 **Reset demo**、**Run underwriting agents**、**Evaluate capital action**，恢复批准
   案例。录制时快速完成这三个操作，后期剪掉等待时间。
 - 指向 Intent ID、Asset、Decision、Authorization 和 Failed checks。
-- 在 mock 模式下点击 **Anchor execution intent**。
+- 在公开演示站的 deterministic demo 模式下点击 **Anchor execution intent**。
 - 展示 `Intent anchored`、Intent hash 和 `Local deterministic adapter`。
 - 点击 **Decision receipt**，展示文件已下载即可，不要打开并滚动完整 JSON。
 - 时间允许时，再简短指向顶部已发布的 **Execution intent** Testnet 链接。
@@ -265,7 +265,7 @@ Fail-safe 机制，以及对未经验证的 AI 行为进行阻断。
 ### 英文台本
 
 > Each outcome becomes a canonical execution intent with its asset, decision, authorization,
-> failed checks, policy snapshot, and intent hash. In this safe local session, anchoring uses a
+> failed checks, policy snapshot, and intent hash. In this safe public demo session, anchoring uses a
 > deterministic adapter. The published Testnet transaction above proves the live contract path.
 > The decision receipt exports the evidence boundary, eight-agent provenance, all nine checks,
 > chain evidence, limitations, and its own receipt hash.
