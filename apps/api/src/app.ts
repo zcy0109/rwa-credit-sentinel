@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import { rateLimit } from "express-rate-limit";
 import { z } from "zod";
 import {
   buildRiskRegistryCallPreview,
@@ -89,6 +90,13 @@ export function createApp(dependencies: AppDependencies = {}) {
   const casper = createCasperAdapterFromEnv();
   const executionAdapter = createExecutionIntentAdapterFromEnv();
   const verifyPublishedFinalsState = dependencies.verifyFinalsState ?? verifyFinalsState;
+  const finalsVerificationLimiter = rateLimit({
+    windowMs: 60_000,
+    limit: 30,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    message: { error: "Too many verification requests. Try again shortly." }
+  });
 
   app.use(cors());
   app.use(express.json({ limit: "6mb" }));
@@ -144,7 +152,7 @@ export function createApp(dependencies: AppDependencies = {}) {
     }
   });
 
-  app.get("/api/casper/verify-finals", async (_req, res, next) => {
+  app.get("/api/casper/verify-finals", finalsVerificationLimiter, async (_req, res, next) => {
     try {
       res.json(await verifyPublishedFinalsState());
     } catch (error) {

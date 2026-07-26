@@ -4,6 +4,44 @@ import { createApp } from "../src/app.js";
 import { credentialRegistry } from "../src/services/credentialRegistry.js";
 import { executionRegistry } from "../src/services/executionRegistry.js";
 import { clearUploadedEvidenceBundles } from "../src/services/evidenceBundle.js";
+import type { FinalsStateVerification } from "../src/services/finalsVerification.js";
+
+const finalsStateFixture: FinalsStateVerification = {
+  verified: true,
+  verifiedAt: "2026-07-23T12:00:00.000Z",
+  contractHash: "contract-hash",
+  packageHash: "package-hash",
+  credential: {
+    dictionaryKey: "dictionary-risk",
+    stateRootHash: "state-root",
+    record: {
+      asset_id: "invoice:demo",
+      risk_score: 78,
+      decision: "Eligible",
+      report_hash: "report",
+      evidence_hash: "evidence",
+      issuer: "AccountHash(issuer)",
+      created_at_ms: 100
+    },
+    checks: []
+  },
+  executionIntent: {
+    dictionaryKey: "dictionary-intent",
+    stateRootHash: "state-root",
+    record: {
+      intent_id: "intent-01",
+      asset_id: "invoice:demo",
+      report_hash: "report",
+      decision: "Approve",
+      authorization: "policy_key",
+      principal_cap_usd: 125000,
+      intent_hash: "intent-hash",
+      issuer: "AccountHash(issuer)",
+      created_at_ms: 200
+    },
+    checks: []
+  }
+};
 
 describe("RWA Credit Sentinel API", () => {
   beforeEach(() => {
@@ -174,47 +212,27 @@ describe("RWA Credit Sentinel API", () => {
 
   it("exposes judge-readable verification of the published Casper state", async () => {
     const app = createApp({
-      verifyFinalsState: async () => ({
-        verified: true,
-        verifiedAt: "2026-07-23T12:00:00.000Z",
-        contractHash: "contract-hash",
-        packageHash: "package-hash",
-        credential: {
-          dictionaryKey: "dictionary-risk",
-          stateRootHash: "state-root",
-          record: {
-            asset_id: "invoice:demo",
-            risk_score: 78,
-            decision: "Eligible",
-            report_hash: "report",
-            evidence_hash: "evidence",
-            issuer: "AccountHash(issuer)",
-            created_at_ms: 100
-          },
-          checks: []
-        },
-        executionIntent: {
-          dictionaryKey: "dictionary-intent",
-          stateRootHash: "state-root",
-          record: {
-            intent_id: "intent-01",
-            asset_id: "invoice:demo",
-            report_hash: "report",
-            decision: "Approve",
-            authorization: "policy_key",
-            principal_cap_usd: 125000,
-            intent_hash: "intent-hash",
-            issuer: "AccountHash(issuer)",
-            created_at_ms: 200
-          },
-          checks: []
-        }
-      })
+      verifyFinalsState: async () => finalsStateFixture
     });
 
     const response = await request(app).get("/api/casper/verify-finals").expect(200);
     expect(response.body.verified).toBe(true);
     expect(response.body.executionIntent.record.principal_cap_usd).toBe(125000);
+  });
+
+  it("rate-limits repeated Casper state verification requests", async () => {
+    const app = createApp({
+      verifyFinalsState: async () => finalsStateFixture
+    });
+
+    for (let requestNumber = 0; requestNumber < 30; requestNumber += 1) {
+      await request(app).get("/api/casper/verify-finals").expect(200);
+    }
+
+    const blockedResponse = await request(app)
+      .get("/api/casper/verify-finals")
+      .expect(429);
+    expect(blockedResponse.body.error).toContain("Too many verification requests");
   });
 
   it("binds the sample underwriting report to content-level evidence hashes", async () => {
