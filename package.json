@@ -33,11 +33,11 @@
     "packages/*"
   ],
   "dependencies": {
-    "casper-js-sdk": "^5.0.12"
+    "casper-js-sdk": "^5.1.0"
   },
   "devDependencies": {
     "npm-run-all2": "^8.0.4",
-    "typescript": "^5.5.4"
+    "typescript": "^7.0.2"
   },
   "overrides": {
     "casper-js-sdk": {

@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@rwa-sentinel/shared": "0.1.0",
-    "casper-js-sdk": "^5.0.12",
+    "casper-js-sdk": "^5.1.0",
     "dotenv": "^17.4.2"
   },
   "devDependencies": {
