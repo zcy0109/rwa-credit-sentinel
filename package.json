@@ -36,7 +36,7 @@
     "casper-js-sdk": "^5.0.12"
   },
   "devDependencies": {
-    "npm-run-all2": "^8.0.4",
+    "npm-run-all2": "^9.0.3",
     "typescript": "^5.5.4"
   },
   "overrides": {
